@@ -46,7 +46,9 @@ class Model(object):
             plt.show()
             
 class NonSpamModel(Model):
-    pass
+    def __init__(self): super(NonSpamModel, self).__init__(NON_SPAM_MODEL)
+    def topicSelectionMethod(self, user, currentTopics):
+        return currentTopics[0]
     
         
 def run(model, numberOfTimeSteps, analysisMethod, 
@@ -64,7 +66,8 @@ def run(model, numberOfTimeSteps, analysisMethod,
         analysis.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, currentUsers=currentUsers)
 
 if __name__ == '__main__':
-    model=Model()
+#    model=Model()
+    model = NonSpamModel()
     GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
     conf = { 'model': model, 'numberOfTimeSteps': 200, 'analysisMethod': model.analysis,
             'newTopicProbability': 0.001, 'userMessagingProbability': 0.1,
