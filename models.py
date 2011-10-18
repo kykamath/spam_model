@@ -80,27 +80,20 @@ class NonSpamModel(Model):
         numberOfPreviousIntervals = 1
         for topic in currentTopics:
             for i in range(0, numberOfPreviousIntervals): totalMessagesSentInPreviousIntervals+=topic.countDistribution[currentTimeStep-i]
-        topicsToRemove = []
         for topic in currentTopics:
             topicScore = 0.0
             for i in range(1, numberOfPreviousIntervals+1): topicScore+=topic.countDistribution[currentTimeStep-i]
             if totalMessagesSentInPreviousIntervals!=0: topicScore/=totalMessagesSentInPreviousIntervals
             else: topicScore = 1.0/len(currentTopics)
             
-            alpha = 0.5
-            if topic.sticky: 
-                alpha=0.1
-                topicScore = alpha*modified_log(topicScore) + (1-alpha)*modified_log(math.exp(-1.8*topic.age)) #+ modified_log(topic.stickiness)
-            else: topicScore = alpha*modified_log(topicScore) + (1-alpha)*modified_log(math.exp(-1*topic.age)) #+ modified_log(topic.stickiness)
-
+            if topic.sticky: topicScore = modified_log(topicScore) + modified_log(math.exp(-2*topic.age)) #+ modified_log(topic.stickiness)
+            else: topicScore = modified_log(topicScore) + modified_log(math.exp(-1*topic.age)) #+ modified_log(topic.stickiness)
+        
             self.topicProbabilities[topic.topicClass].append((topic, topicScore))
             if topic.sticky: self.topicProbabilitiesForSticky[topic.topicClass].append((topic, topicScore))
-#        for topic in topicsToRemove: currentTopics.remove(topic)
-#        Topic.addNewTopics(currentTopics, len(topicsToRemove))
+        
         for topicClass in self.topicProbabilities.keys()[:]: self.topicProbabilities[topicClass] = sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)
         for topicClass in self.topicProbabilitiesForSticky.keys()[:]: self.topicProbabilitiesForSticky[topicClass] = sorted(self.topicProbabilitiesForSticky[topicClass], key=itemgetter(1), reverse=True)
-#            print self.topicProbabilities[topicClass][:5]
-#            print self.topicProbabilities[topicClass]  
         self.lastObservedTimeStep=currentTimeStep
         
         
