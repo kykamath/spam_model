@@ -49,14 +49,28 @@ class Model(object):
 class NonSpamModel(Model):
     def __init__(self): 
         super(NonSpamModel, self).__init__(NON_SPAM_MODEL)
-        self.observed = 0
+        self.lastObservedTimeStep = None
+        self.topicProbabilities = None
     def topicSelectionMethod(self, currentTimeStep, user, currentTopics, **conf):
+        if self.lastObservedTimeStep!=currentTimeStep: self._updateTopicProbabilities(currentTimeStep, currentTopics)
         topic = None
         if GeneralMethods.trueWith(conf['newTopicProbability']): topic = Topic(len(currentTopics)); currentTopics.append(topic)
-        else: topic=currentTopics[0]
-        self.observed+=1
+        else: topic=random.choice(currentTopics)
         return topic
-    
+    def _updateTopicProbabilities(self, currentTimeStep, currentTopics):
+        self.topicProbabilities, topicScores = defaultdict(list), defaultdict(list)
+        totalMessagesSentInPreviousIntervals = 0.0
+        numberOfPreviousIntervals = 1
+        for topic in currentTopics:
+            for i in range(1, numberOfPreviousIntervals+1): totalMessagesSentInPreviousIntervals+=topic.countDistribution[currentTimeStep-i]
+        for topic in currentTopics:
+            topicScores[topic.id] = {'message_score':0}
+            for i in range(1, numberOfPreviousIntervals+1): topicScores[topic.id]['message_score']+=topic.countDistribution[currentTimeStep-i]
+            if totalMessagesSentInPreviousIntervals!=0: topicScores[topic.id]['message_score']/=totalMessagesSentInPreviousIntervals
+            else: topicScores[topic.id]['message_score'] = 1.0/len(currentTopics)
+        print [t['message_score'] for t in topicScores.itervalues()],totalMessagesSentInPreviousIntervals
+        self.lastObservedTimeStep=currentTimeStep
+#        assert sum(t['message_score'] for t in topicScores.itervalues())==1.0
         
 def run(model, numberOfTimeSteps=200, 
         addUsersMethod=User.addNewUsers, noOfUsers=10000, analysisFrequency=1, 
@@ -73,8 +87,8 @@ def run(model, numberOfTimeSteps=200,
         analysis.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, currentUsers=currentUsers)
 
 if __name__ == '__main__':
-    model=Model()
-#    model = NonSpamModel()
+#    model=Model()
+    model = NonSpamModel()
     GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
     conf = {'model': model, 'newTopicProbability': 0.001, 'userMessagingProbability': 0.1}
     run(**conf)
