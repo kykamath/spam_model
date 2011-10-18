@@ -4,7 +4,7 @@ Created on Oct 17, 2011
 @author: kykamath
 '''
 import unittest
-from objects import Topic, TrendingTopic
+from objects import Topic
 
 class TopicTests(unittest.TestCase):
     def test_init(self):
@@ -17,11 +17,5 @@ class TopicTests(unittest.TestCase):
         self.assertEqual(7, len(topics))
         for i in range(7): self.assertEqual(i, topics[i].id)
         
-class TrendingTopicTests(unittest.TestCase):
-    def test_init(self):
-        topic = TrendingTopic(0.5, 10)
-        self.assertEqual(10, topic.id)
-        self.assertEqual(0.5, topic.trendingProbability)
-
 if __name__ == '__main__':
     unittest.main()
