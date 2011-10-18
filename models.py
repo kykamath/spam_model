@@ -41,6 +41,7 @@ class Model(object):
                 else: topic=random.choice(currentTopics)
                 topic.countDistribution[currentTimeStep]+=1
                 topic.totalCount+=1
+                
     def analysis(self, currentTimeStep=None, currentTopics=None, currentUsers=None, modeling=True):
         if modeling:
             topicDistribution = dict((str(topic.id), {'total': topic.totalCount, 'timeStep': topic.countDistribution[currentTimeStep]}) for topic in currentTopics)
@@ -55,14 +56,12 @@ class Model(object):
             plt.show()
     
         
-def run(model, numberOfTimeSteps, analysisMethod, analysisFrequency=1,
-        newTopicProbability = 0.001,
-        addUsersMethod = User.addNewUsers, noOfUsers = 10000, userMessagingProbability = 0.1,
+def run(model, numberOfTimeSteps, analysisMethod, 
+        addUsersMethod=User.addNewUsers, noOfUsers=10000, analysisFrequency=1, 
         **conf):
-    
     currentTopics = []
     currentUsers = []
-    addUsersMethod(currentUsers, noOfUsers)
+    addUsersMethod(currentUsers, noOfUsers, **conf)
     
     analysis = FixedIntervalMethod(analysisMethod, analysisFrequency)
 
@@ -75,6 +74,7 @@ if __name__ == '__main__':
     model=Model(1)
     GeneralMethods.runCommand('rm -rf %s'%model.analysisFile)
     conf = { 'model': model, 'numberOfTimeSteps': 200, 'analysisMethod': model.analysis,
+            'newTopicProbability': 0.001, 'userMessagingProbability': 0.1,
             }
     run(**conf)
     model.analysis(modeling=False)

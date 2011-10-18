@@ -39,7 +39,7 @@ class User(object):
         self.id = id
     def __str__(self): return ' '.join([str(self.id)])
     @staticmethod
-    def addNewUsers(currentUsers, noOfUsersToAdd):
+    def addNewUsers(currentUsers, noOfUsersToAdd, **conf):
         if not currentUsers: initialId = 0
         else: initialId = currentUsers[-1].id+1
         [currentUsers.append(User(initialId+i)) for i in range(noOfUsersToAdd)]
