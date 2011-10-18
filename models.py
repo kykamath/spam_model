@@ -57,6 +57,7 @@ class NonSpamModel(Model):
         super(NonSpamModel, self).__init__(NON_SPAM_MODEL)
         self.lastObservedTimeStep = None
         self.topicProbabilities = None
+        self.topicProbabilitiesForSticky = None
     def topicSelectionMethod(self, currentTimeStep, user, currentTopics, **conf):
         if self.lastObservedTimeStep!=currentTimeStep: self._updateTopicProbabilities(currentTimeStep, currentTopics)
         topic = None
@@ -65,11 +66,16 @@ class NonSpamModel(Model):
             topic = Topic(len(currentTopics)); currentTopics.append(topic)
         else: 
 #            if self.topicProbabilities[user.topicClass][:10]:
-            topic=random.choice(self.topicProbabilities[user.topicClass][:10])[0]
+            stickyTopic = None
+            generalTopic = random.choice(self.topicProbabilities[user.topicClass][:10])
+            if self.topicProbabilitiesForSticky[user.topicClass]: stickyTopic = random.choice(self.topicProbabilitiesForSticky[user.topicClass][:1])
+            if stickyTopic and generalTopic[1]<stickyTopic[1] and GeneralMethods.trueWith(0.75): topic=stickyTopic[0]
+            else: topic=generalTopic[0]
 #            print topic.topicClass, topic.id
         return topic
     def _updateTopicProbabilities(self, currentTimeStep, currentTopics):
         self.topicProbabilities = defaultdict(list)
+        self.topicProbabilitiesForSticky = defaultdict(list)
         totalMessagesSentInPreviousIntervals = 0.0
         numberOfPreviousIntervals = 1
         for topic in currentTopics:
@@ -80,20 +86,25 @@ class NonSpamModel(Model):
             for i in range(1, numberOfPreviousIntervals+1): topicScore+=topic.countDistribution[currentTimeStep-i]
             if totalMessagesSentInPreviousIntervals!=0: topicScore/=totalMessagesSentInPreviousIntervals
             else: topicScore = 1.0/len(currentTopics)
-            topicScore = modified_log(topicScore) + modified_log(math.exp(-0.5*topic.age))#+modified_log(topic.stickiness)
-#            if topic.age>50: topicsToRemove.append(topic)
-#            else: 
+            
+            alpha = 0.5
+            if topic.sticky: 
+                alpha=0.1
+                topicScore = alpha*modified_log(topicScore) + (1-alpha)*modified_log(math.exp(-1.8*topic.age)) #+ modified_log(topic.stickiness)
+            else: topicScore = alpha*modified_log(topicScore) + (1-alpha)*modified_log(math.exp(-1*topic.age)) #+ modified_log(topic.stickiness)
+
             self.topicProbabilities[topic.topicClass].append((topic, topicScore))
+            if topic.sticky: self.topicProbabilitiesForSticky[topic.topicClass].append((topic, topicScore))
 #        for topic in topicsToRemove: currentTopics.remove(topic)
 #        Topic.addNewTopics(currentTopics, len(topicsToRemove))
-        for topicClass in self.topicProbabilities.keys()[:]: 
-            self.topicProbabilities[topicClass] = sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)
+        for topicClass in self.topicProbabilities.keys()[:]: self.topicProbabilities[topicClass] = sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)
+        for topicClass in self.topicProbabilitiesForSticky.keys()[:]: self.topicProbabilitiesForSticky[topicClass] = sorted(self.topicProbabilitiesForSticky[topicClass], key=itemgetter(1), reverse=True)
 #            print self.topicProbabilities[topicClass][:5]
 #            print self.topicProbabilities[topicClass]  
         self.lastObservedTimeStep=currentTimeStep
         
         
-def run(model, numberOfTimeSteps=100, 
+def run(model, numberOfTimeSteps=200, 
         addUsersMethod=User.addNewUsers, noOfUsers=10000, analysisFrequency=1, 
         **conf):
     currentTopics = []
