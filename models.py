@@ -43,7 +43,8 @@ class Model(object):
             for data in FileIO.iterateJsonFromFile(self.modelFile):
                 for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
             for topic in topicsDataX: plt.fill_between(topicsDataX[topic], topicsDataY[topic], color=GeneralMethods.getRandomColor(), alpha=0.6)
-            plt.show()
+#            plt.show()
+            plt.savefig(self.modelFile+'.pdf')
             
 class NonSpamModel(Model):
     def __init__(self): 
@@ -65,18 +66,17 @@ def run(model, numberOfTimeSteps=200,
     addUsersMethod(currentUsers, noOfUsers, **conf)
     
     analysis = FixedIntervalMethod(model.analysis, analysisFrequency)
-
+    
     for currentTimeStep in range(numberOfTimeSteps):
         Topic.incrementTopicAge(currentTopics)
         model.process(currentTimeStep, currentTopics, currentUsers, **conf)
         analysis.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, currentUsers=currentUsers)
 
 if __name__ == '__main__':
-#    model=Model()
-    model = NonSpamModel()
+    model=Model()
+#    model = NonSpamModel()
     GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
     conf = {'model': model, 'newTopicProbability': 0.001, 'userMessagingProbability': 0.1}
     run(**conf)
-    print model.observed
     model.analysis(modeling=False)
     
