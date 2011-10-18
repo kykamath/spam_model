@@ -5,8 +5,9 @@ Created on Oct 17, 2011
 '''
 from collections import defaultdict
 import random
+from library.classes import GeneralMethods
 
-topicClasses = range(6)
+topicClasses = range(4)
 
 class Topic(object):
     def __init__(self, id):
@@ -15,6 +16,8 @@ class Topic(object):
         self.countDistribution = defaultdict(int)
         self.age = 0
         self.topicClass = random.choice(topicClasses)
+        if GeneralMethods.trueWith(0.01): self.stickiness = random.uniform(0.75, 1.0)
+        else: self.stickiness = random.uniform(0.0, 0.5)
     def __str__(self): return ' '.join([str(self.id)])
     @staticmethod
     def incrementTopicAge(currentTopics):
