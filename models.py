@@ -8,10 +8,11 @@ Created on Oct 17, 2011
 from library.classes import FixedIntervalMethod
 from library.classes import GeneralMethods
 from objects import Topic, User
-import random
+import random, math
 from library.file_io import FileIO
 from settings import spamModelFolder
 from collections import defaultdict
+from operator import itemgetter
 import matplotlib.pyplot as plt
 
 RANDOM_MODEL = 'random'
@@ -58,19 +59,22 @@ class NonSpamModel(Model):
         else: topic=random.choice(currentTopics)
         return topic
     def _updateTopicProbabilities(self, currentTimeStep, currentTopics):
-        self.topicProbabilities, topicScores = defaultdict(list), defaultdict(list)
+        self.topicProbabilities = defaultdict(list)
         totalMessagesSentInPreviousIntervals = 0.0
-        numberOfPreviousIntervals = 1
+        numberOfPreviousIntervals = 3
         for topic in currentTopics:
             for i in range(1, numberOfPreviousIntervals+1): totalMessagesSentInPreviousIntervals+=topic.countDistribution[currentTimeStep-i]
         for topic in currentTopics:
-            topicScores[topic.id] = {'message_score':0}
-            for i in range(1, numberOfPreviousIntervals+1): topicScores[topic.id]['message_score']+=topic.countDistribution[currentTimeStep-i]
-            if totalMessagesSentInPreviousIntervals!=0: topicScores[topic.id]['message_score']/=totalMessagesSentInPreviousIntervals
-            else: topicScores[topic.id]['message_score'] = 1.0/len(currentTopics)
-        print [t['message_score'] for t in topicScores.itervalues()],totalMessagesSentInPreviousIntervals
+            topicScore = 0.0
+            for i in range(1, numberOfPreviousIntervals+1): topicScore+=topic.countDistribution[currentTimeStep-i]
+            if totalMessagesSentInPreviousIntervals!=0: topicScore/=totalMessagesSentInPreviousIntervals
+            else: topicScore = 1.0/len(currentTopics)
+            topicScore = topicScore*math.exp(-0.3*topic.age)
+            self.topicProbabilities[topic.topicClass].append((topic, topicScore))
+        for topicClass in self.topicProbabilities.keys()[:]: self.topicProbabilities[topicClass] = sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)
+#            print self.topicProbabilities[topicClass]  
         self.lastObservedTimeStep=currentTimeStep
-#        assert sum(t['message_score'] for t in topicScores.itervalues())==1.0
+        
         
 def run(model, numberOfTimeSteps=200, 
         addUsersMethod=User.addNewUsers, noOfUsers=10000, analysisFrequency=1, 
