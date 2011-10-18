@@ -20,7 +20,7 @@ NON_SPAM_MODEL = 'non_spam'
 class Model(object):
     def __init__(self, id=RANDOM_MODEL):
         self.modelFile = spamModelFolder+id
-    def topicSelectionMethod(self, user, currentTopics, **conf): 
+    def topicSelectionMethod(self, currentTimeStep, user, currentTopics, **conf): 
         topic = None
         if GeneralMethods.trueWith(conf['newTopicProbability']): topic = Topic(len(currentTopics)); currentTopics.append(topic)
         else: topic=random.choice(currentTopics)
@@ -29,7 +29,7 @@ class Model(object):
         for user in currentUsers:
             if GeneralMethods.trueWith(conf['userMessagingProbability']):
                 if not currentTopics: Topic.addNewTopics(currentTopics, 300)
-                topic = self.topicSelectionMethod(user, currentTopics, **conf)
+                topic = self.topicSelectionMethod(currentTimeStep, user, currentTopics, **conf)
                 topic.countDistribution[currentTimeStep]+=1
                 topic.totalCount+=1
     def analysis(self, currentTimeStep=None, currentTopics=None, currentUsers=None, modeling=True):
@@ -46,15 +46,18 @@ class Model(object):
             plt.show()
             
 class NonSpamModel(Model):
-    def __init__(self): super(NonSpamModel, self).__init__(NON_SPAM_MODEL)
-    def topicSelectionMethod(self, user, currentTopics, **conf):
+    def __init__(self): 
+        super(NonSpamModel, self).__init__(NON_SPAM_MODEL)
+        self.observed = 0
+    def topicSelectionMethod(self, currentTimeStep, user, currentTopics, **conf):
         topic = None
         if GeneralMethods.trueWith(conf['newTopicProbability']): topic = Topic(len(currentTopics)); currentTopics.append(topic)
         else: topic=currentTopics[0]
+        self.observed+=1
         return topic
     
         
-def run(model, numberOfTimeSteps, 
+def run(model, numberOfTimeSteps=200, 
         addUsersMethod=User.addNewUsers, noOfUsers=10000, analysisFrequency=1, 
         **conf):
     currentTopics = []
@@ -72,7 +75,8 @@ if __name__ == '__main__':
 #    model=Model()
     model = NonSpamModel()
     GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
-    conf = {'model': model, 'numberOfTimeSteps': 200, 'newTopicProbability': 0.001, 'userMessagingProbability': 0.1}
+    conf = {'model': model, 'newTopicProbability': 0.001, 'userMessagingProbability': 0.1}
     run(**conf)
+    print model.observed
     model.analysis(modeling=False)
     
