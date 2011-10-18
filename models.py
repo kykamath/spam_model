@@ -20,16 +20,16 @@ NON_SPAM_MODEL = 'non_spam'
 class Model(object):
     def __init__(self, id=RANDOM_MODEL):
         self.modelFile = spamModelFolder+id
-    def topicSelectionMethod(self, user, currentTopics): return random.choice(currentTopics) 
+    def topicSelectionMethod(self, user, currentTopics, **conf): 
+        topic = None
+        if GeneralMethods.trueWith(conf['newTopicProbability']): topic = Topic(len(currentTopics)); currentTopics.append(topic)
+        else: topic=random.choice(currentTopics)
+        return topic
     def process(self, currentTimeStep, currentTopics, currentUsers, **conf):
         for user in currentUsers:
             if GeneralMethods.trueWith(conf['userMessagingProbability']):
-                topic = None
                 if not currentTopics: Topic.addNewTopics(currentTopics, 300)
-                if GeneralMethods.trueWith(conf['newTopicProbability']): 
-                    topic = Topic(len(currentTopics))
-                    currentTopics.append(topic)
-                else: topic=self.topicSelectionMethod(user, currentTopics)
+                topic = self.topicSelectionMethod(user, currentTopics, **conf)
                 topic.countDistribution[currentTimeStep]+=1
                 topic.totalCount+=1
     def analysis(self, currentTimeStep=None, currentTopics=None, currentUsers=None, modeling=True):
@@ -47,18 +47,21 @@ class Model(object):
             
 class NonSpamModel(Model):
     def __init__(self): super(NonSpamModel, self).__init__(NON_SPAM_MODEL)
-    def topicSelectionMethod(self, user, currentTopics):
-        return currentTopics[0]
+    def topicSelectionMethod(self, user, currentTopics, **conf):
+        topic = None
+        if GeneralMethods.trueWith(conf['newTopicProbability']): topic = Topic(len(currentTopics)); currentTopics.append(topic)
+        else: topic=currentTopics[0]
+        return topic
     
         
-def run(model, numberOfTimeSteps, analysisMethod, 
+def run(model, numberOfTimeSteps, 
         addUsersMethod=User.addNewUsers, noOfUsers=10000, analysisFrequency=1, 
         **conf):
     currentTopics = []
     currentUsers = []
     addUsersMethod(currentUsers, noOfUsers, **conf)
     
-    analysis = FixedIntervalMethod(analysisMethod, analysisFrequency)
+    analysis = FixedIntervalMethod(model.analysis, analysisFrequency)
 
     for currentTimeStep in range(numberOfTimeSteps):
         Topic.incrementTopicAge(currentTopics)
@@ -69,9 +72,7 @@ if __name__ == '__main__':
 #    model=Model()
     model = NonSpamModel()
     GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
-    conf = { 'model': model, 'numberOfTimeSteps': 200, 'analysisMethod': model.analysis,
-            'newTopicProbability': 0.001, 'userMessagingProbability': 0.1,
-            }
+    conf = {'model': model, 'numberOfTimeSteps': 200, 'newTopicProbability': 0.001, 'userMessagingProbability': 0.1}
     run(**conf)
     model.analysis(modeling=False)
     
