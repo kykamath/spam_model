@@ -76,7 +76,6 @@ class MixedUsersModel(Model):
         if self.lastObservedTimeStep!=currentTimeStep: self._updateTopicProbabilities(currentTimeStep, currentTopics, **conf)
         message = None
         if GeneralMethods.trueWith(user.messagingProbability):
-#            for topicNumber in range(user.numberOfTopicsPerMessage):
             if GeneralMethods.trueWith(user.newTopicProbability): topic = Topic(len(currentTopics)); currentTopics.append(topic); message=user.generateMessage(currentTimeStep, topic)
             else: 
                 if GeneralMethods.trueWith(user.probabilityOfPickingPopularTopic):
