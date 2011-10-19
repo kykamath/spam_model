@@ -100,7 +100,6 @@ class MixedUsersModel(Model):
             else: topicScore = 1.0/len(currentTopics)
             topicScore = topicScore * math.exp(topic.decayCoefficient*topic.age)
             self.topicProbabilities[topic.topicClass].append((topic, topicScore))
-#            if topic.stickiness>=stickinessLowerThreshold: self.topTopics.append((topic, topicScore))
         for topicClass in self.topicProbabilities.keys()[:]: self.topTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)[:1]
         
         self.lastObservedTimeStep=currentTimeStep
