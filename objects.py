@@ -59,7 +59,7 @@ class User(object):
 class NormalUser(User):
     def __init__(self, id):
         super(NormalUser, self).__init__(id)
-        self.topicClass = random.choice(topicClasses)
+        self.topicClass = random.choice(topicClasses) # Models interest of a user. Ex. User interested in sports, technology.
         self.probabilityOfPickingPopularTopic = 0.40
         self.newTopicProbability = 0.001
 
