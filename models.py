@@ -49,60 +49,60 @@ class Model(object):
             for data in FileIO.iterateJsonFromFile(self.modelFile):
                 for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
             for topic in topicsDataX: plt.fill_between(topicsDataX[topic], topicsDataY[topic], color=GeneralMethods.getRandomColor(), alpha=1.6)
-            plt.show()
-#            plt.savefig(self.modelFile+'.pdf')
+#            plt.show()
+            plt.savefig(self.modelFile+'.pdf')
             
+#class NonSpamModel(Model):
+#    def __init__(self): 
+#        super(NonSpamModel, self).__init__(NON_SPAM_MODEL)
+#        self.lastObservedTimeStep = None
+#        self.topicProbabilities = None
+#        self.topicProbabilitiesForSticky = None
+#    def topicSelectionMethod(self, currentTimeStep, user, currentTopics, **conf):
+#        if self.lastObservedTimeStep!=currentTimeStep: self._updateTopicProbabilities(currentTimeStep, currentTopics)
+#        topic = None
+#        if GeneralMethods.trueWith(conf['newTopicProbability']): 
+#            topic = Topic(len(currentTopics)); currentTopics.append(topic)
+#        else: 
+##            if self.topicProbabilities[user.topicClass][:10]:
+#            stickyTopic = None
+#            generalTopic = random.choice(self.topicProbabilities[user.topicClass][:10])
+#            if self.topicProbabilitiesForSticky[user.topicClass]: stickyTopic = random.choice(self.topicProbabilitiesForSticky[user.topicClass][:1])
+#            if stickyTopic and generalTopic[1]<stickyTopic[1] and GeneralMethods.trueWith(0.75): topic=stickyTopic[0]
+##            elif GeneralMethods.trueWith(0.5): topic=generalTopic[0]
+#            else: topic=generalTopic[0]
+##            print topic.topicClass, topic.id
+#        return topic
+#    def _updateTopicProbabilities(self, currentTimeStep, currentTopics):
+#        self.topicProbabilities = defaultdict(list)
+#        self.topicProbabilitiesForSticky = defaultdict(list)
+#        totalMessagesSentInPreviousIntervals = 0.0
+#        numberOfPreviousIntervals = 1
+#        for topic in currentTopics:
+#            for i in range(0, numberOfPreviousIntervals): totalMessagesSentInPreviousIntervals+=topic.countDistribution[currentTimeStep-i]
+#        for topic in currentTopics:
+#            topicScore = 0.0
+#            for i in range(1, numberOfPreviousIntervals+1): topicScore+=topic.countDistribution[currentTimeStep-i]
+#            if totalMessagesSentInPreviousIntervals!=0: topicScore/=totalMessagesSentInPreviousIntervals
+#            else: topicScore = 1.0/len(currentTopics)
+#            
+##            alpha=0.5
+##            if topic.sticky: topicScore = alpha*modified_log(topicScore) + (1-alpha)*modified_log(math.exp(-2*topic.age)) #+ modified_log(topic.stickiness)
+##            else: topicScore = alpha*modified_log(topicScore) + (1-alpha)*modified_log(math.exp(-1*topic.age)) #+ modified_log(topic.stickiness)
+#            
+#            if topic.sticky: topicScore = modified_log(topicScore) + modified_log(math.exp(-2*topic.age)) #+ modified_log(topic.stickiness)
+#            else: topicScore = modified_log(topicScore) + modified_log(math.exp(-1*topic.age)) #+ modified_log(topic.stickiness)
+#        
+#            self.topicProbabilities[topic.topicClass].append((topic, topicScore))
+#            if topic.sticky: self.topicProbabilitiesForSticky[topic.topicClass].append((topic, topicScore))
+#        
+#        for topicClass in self.topicProbabilities.keys()[:]: self.topicProbabilities[topicClass] = sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)
+#        for topicClass in self.topicProbabilitiesForSticky.keys()[:]: self.topicProbabilitiesForSticky[topicClass] = sorted(self.topicProbabilitiesForSticky[topicClass], key=itemgetter(1), reverse=True)
+#        self.lastObservedTimeStep=currentTimeStep
+        
 class NonSpamModel(Model):
     def __init__(self): 
         super(NonSpamModel, self).__init__(NON_SPAM_MODEL)
-        self.lastObservedTimeStep = None
-        self.topicProbabilities = None
-        self.topicProbabilitiesForSticky = None
-    def topicSelectionMethod(self, currentTimeStep, user, currentTopics, **conf):
-        if self.lastObservedTimeStep!=currentTimeStep: self._updateTopicProbabilities(currentTimeStep, currentTopics)
-        topic = None
-        if GeneralMethods.trueWith(conf['newTopicProbability']): 
-            topic = Topic(len(currentTopics)); currentTopics.append(topic)
-        else: 
-#            if self.topicProbabilities[user.topicClass][:10]:
-            stickyTopic = None
-            generalTopic = random.choice(self.topicProbabilities[user.topicClass][:10])
-            if self.topicProbabilitiesForSticky[user.topicClass]: stickyTopic = random.choice(self.topicProbabilitiesForSticky[user.topicClass][:1])
-            if stickyTopic and generalTopic[1]<stickyTopic[1] and GeneralMethods.trueWith(0.75): topic=stickyTopic[0]
-#            elif GeneralMethods.trueWith(0.5): topic=generalTopic[0]
-            else: topic=generalTopic[0]
-#            print topic.topicClass, topic.id
-        return topic
-    def _updateTopicProbabilities(self, currentTimeStep, currentTopics):
-        self.topicProbabilities = defaultdict(list)
-        self.topicProbabilitiesForSticky = defaultdict(list)
-        totalMessagesSentInPreviousIntervals = 0.0
-        numberOfPreviousIntervals = 1
-        for topic in currentTopics:
-            for i in range(0, numberOfPreviousIntervals): totalMessagesSentInPreviousIntervals+=topic.countDistribution[currentTimeStep-i]
-        for topic in currentTopics:
-            topicScore = 0.0
-            for i in range(1, numberOfPreviousIntervals+1): topicScore+=topic.countDistribution[currentTimeStep-i]
-            if totalMessagesSentInPreviousIntervals!=0: topicScore/=totalMessagesSentInPreviousIntervals
-            else: topicScore = 1.0/len(currentTopics)
-            
-#            alpha=0.5
-#            if topic.sticky: topicScore = alpha*modified_log(topicScore) + (1-alpha)*modified_log(math.exp(-2*topic.age)) #+ modified_log(topic.stickiness)
-#            else: topicScore = alpha*modified_log(topicScore) + (1-alpha)*modified_log(math.exp(-1*topic.age)) #+ modified_log(topic.stickiness)
-            
-            if topic.sticky: topicScore = modified_log(topicScore) + modified_log(math.exp(-2*topic.age)) #+ modified_log(topic.stickiness)
-            else: topicScore = modified_log(topicScore) + modified_log(math.exp(-1*topic.age)) #+ modified_log(topic.stickiness)
-        
-            self.topicProbabilities[topic.topicClass].append((topic, topicScore))
-            if topic.sticky: self.topicProbabilitiesForSticky[topic.topicClass].append((topic, topicScore))
-        
-        for topicClass in self.topicProbabilities.keys()[:]: self.topicProbabilities[topicClass] = sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)
-        for topicClass in self.topicProbabilitiesForSticky.keys()[:]: self.topicProbabilitiesForSticky[topicClass] = sorted(self.topicProbabilitiesForSticky[topicClass], key=itemgetter(1), reverse=True)
-        self.lastObservedTimeStep=currentTimeStep
-        
-class NonSpamModel1(Model):
-    def __init__(self): 
-        super(NonSpamModel1, self).__init__(NON_SPAM_MODEL)
         self.lastObservedTimeStep = None
         self.topicProbabilities = None
         self.topicProbabilitiesForSticky = None
@@ -140,7 +140,7 @@ class NonSpamModel1(Model):
         self.lastObservedTimeStep=currentTimeStep
         
 def run(model, numberOfTimeSteps=200, 
-        addUsersMethod=User.addNewUsers, noOfUsers=100000, analysisFrequency=1, 
+        addUsersMethod=User.addNewUsers, noOfUsers=10000, analysisFrequency=1, 
         **conf):
     currentTopics = []
     currentUsers = []
@@ -155,7 +155,7 @@ def run(model, numberOfTimeSteps=200,
 
 if __name__ == '__main__':
 #    model=Model()
-    model = NonSpamModel1()
+    model = NonSpamModel()
     GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
     conf = {'model': model, 'newTopicProbability': 0.001, 'userMessagingProbability': 0.1, 'topicDecay': 3}
     run(**conf)
