@@ -6,6 +6,7 @@ Created on Oct 17, 2011
 from collections import defaultdict
 import random
 from library.classes import GeneralMethods
+from settings import stickinessLowerThreshold
 
 topicClasses = range(4)
 
@@ -18,7 +19,7 @@ class Topic(object):
         self.topicClass = random.choice(topicClasses)
 #        if GeneralMethods.trueWith(0.1): self.sticky = True
 #        else: self.sticky = False
-        if GeneralMethods.trueWith(0.05): self.stickiness = random.uniform(0.6, 1.0)
+        if GeneralMethods.trueWith(0.05): self.stickiness = random.uniform(stickinessLowerThreshold, 1.0)
         else: self.stickiness = random.uniform(0.0, 0.1)
         
     def __str__(self): return ' '.join([str(self.id)])
