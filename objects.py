@@ -17,8 +17,7 @@ class Topic(object):
         self.countDistribution = defaultdict(int)
         self.age = 0
         self.topicClass = random.choice(topicClasses)
-#        if GeneralMethods.trueWith(0.1): self.sticky = True
-#        else: self.sticky = False
+        self.decayCoefficient = -3
         if GeneralMethods.trueWith(0.05): self.stickiness = random.uniform(stickinessLowerThreshold, 1.0)
         else: self.stickiness = random.uniform(0.0, 0.1)
         
@@ -32,24 +31,45 @@ class Topic(object):
         else: initialId = currentTopics[-1].id+1
         [currentTopics.append(Topic(initialId+i)) for i in range(noOfTopicsToAdd)]
         
-#class TrendingTopic(Topic):
-#    def __init__(self, trendingProbability, *args, **kwargs):
-#        super(TrendingTopic, self).__init__(*args, **kwargs)
-#        self.trendingProbability = trendingProbability
-    
 class User(object):
     def __init__(self, id):
         self.id = id
         self.topicClass = random.choice(topicClasses)
     def __str__(self): return ' '.join([str(self.id)])
     @staticmethod
-    def addNewUsers(currentUsers, noOfUsersToAdd, **conf):
+    def addNormalUsers(currentUsers, noOfUsersToAdd, **conf):
         if not currentUsers: initialId = 0
         else: initialId = currentUsers[-1].id+1
-        [currentUsers.append(User(initialId+i)) for i in range(noOfUsersToAdd)]
+        [currentUsers.append(NormalUser(initialId+i)) for i in range(noOfUsersToAdd)]
+    @staticmethod
+    def addSpammers(currentUsers, noOfUsersToAdd, **conf):
+        if not currentUsers: initialId = 0
+        else: initialId = currentUsers[-1].id+1
+        [currentUsers.append(Spammer(initialId+i)) for i in range(noOfUsersToAdd)]
+    @staticmethod
+    def addUsersUsingRatio(currentUsers, noOfUsersToAdd, **conf):
+        ratio = conf['ratio']
+        if '%0.1f'%(ratio['normal']+ratio['spammer'])!='%0.1f'%1.0: raise Exception('Ratio Should sum to 1.0')
+        User.addNormalUsers(currentUsers, int(noOfUsersToAdd*ratio['normal']), **conf)
+        User.addSpammers(currentUsers, int(noOfUsersToAdd*ratio['spammer']), **conf)
     
 class NormalUser(User):
-    pass
+    def __init__(self, id):
+        super(NormalUser, self).__init__(id)
+        self.messagingProbability = 0.1
+        self.probabilityOfPickingPopularTopic = 0.40
+        self.newTopicProbability = 0.001
+        self.normalTopicSelection = True
+        self.numberOfTopicsPerMessage = 1
 
 class Spammer(User):
-    pass
+    def __init__(self, id):
+        super(Spammer, self).__init__(id)
+        self.messagingProbability = 0.1
+        self.probabilityOfPickingPopularTopic = 1.0
+        self.newTopicProbability = 0.0
+        self.normalTopicSelection = False
+#        self.numberOfTopicsPerMessage = int(random.uniform(1,3))
+        self.numberOfTopicsPerMessage = 1
+        
+User.addUsersUsingRatio([], 100, **{'ratio': {'normal': 0.97, 'spammer': 0.03}})

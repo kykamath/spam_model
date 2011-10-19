@@ -16,7 +16,7 @@ from operator import itemgetter
 import matplotlib.pyplot as plt
 
 RANDOM_MODEL = 'random'
-NON_SPAM_MODEL = 'non_spam'
+MIXED_USERS_MODEL = 'mixed_users'
 
 def modified_log(i):
     if i==0: return 0
@@ -26,15 +26,16 @@ class Model(object):
     def __init__(self, id=RANDOM_MODEL):
         self.modelFile = spamModelFolder+id
     def topicSelectionMethod(self, currentTimeStep, user, currentTopics, **conf): 
-        topic = None
-        if GeneralMethods.trueWith(conf['newTopicProbability']): topic = Topic(len(currentTopics)); currentTopics.append(topic)
-        else: topic=random.choice(currentTopics)
-        return topic
+        topics = []
+        if GeneralMethods.trueWith(user.messagingProbability):
+            if GeneralMethods.trueWith(user.newTopicProbability): topic = Topic(len(currentTopics)); currentTopics.append(topic); topics.append(topic)
+            else: topics.append(random.choice(currentTopics))
+        return topics
     def process(self, currentTimeStep, currentTopics, currentUsers, **conf):
+        if not currentTopics: Topic.addNewTopics(currentTopics, 300)
         for user in currentUsers:
-            if GeneralMethods.trueWith(conf['userMessagingProbability']):
-                if not currentTopics: Topic.addNewTopics(currentTopics, 300)
-                topic = self.topicSelectionMethod(currentTimeStep, user, currentTopics, **conf)
+            topics = self.topicSelectionMethod(currentTimeStep, user, currentTopics, **conf)
+            for topic in topics:
                 if topic:
                     topic.countDistribution[currentTimeStep]+=1
                     topic.totalCount+=1
@@ -50,7 +51,7 @@ class Model(object):
                 if 'conf' not in data:
                     for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
             for topic in topicsDataX: plt.fill_between(topicsDataX[topic], topicsDataY[topic], color=GeneralMethods.getRandomColor(), alpha=1.0)
-#            plt.show()
+            plt.show()
             plt.savefig(self.modelFile+'.pdf')
     def plotTrendingTopics(self):
         topicsDataX, topicsDataY, trendingTopics = defaultdict(list), defaultdict(list), []
@@ -59,30 +60,37 @@ class Model(object):
                 for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
             else: trendingTopics=data['trending_topics']
         for topic in trendingTopics: plt.fill_between(topicsDataX[str(topic)], topicsDataY[str(topic)], color=GeneralMethods.getRandomColor(), alpha=1.0)
-#            plt.show()
-        plt.savefig(self.modelFile+'_tt.pdf')
-                
+        plt.show()
+#        plt.savefig(self.modelFile+'_tt.pdf')
             
-class NonSpamModel(Model):
+class MixedUsersModel(Model):
     def __init__(self): 
-        super(NonSpamModel, self).__init__(NON_SPAM_MODEL)
+        super(MixedUsersModel, self).__init__(MIXED_USERS_MODEL)
         self.lastObservedTimeStep = None
         self.topicProbabilities = None
-        self.topicProbabilitiesForSticky = None
+        self.topTopics = None
     def topicSelectionMethod(self, currentTimeStep, user, currentTopics, **conf):
         if self.lastObservedTimeStep!=currentTimeStep: self._updateTopicProbabilities(currentTimeStep, currentTopics, **conf)
-        topic = None
-        if GeneralMethods.trueWith(conf['newTopicProbability']): topic = Topic(len(currentTopics)); currentTopics.append(topic)
-        else: 
-            if GeneralMethods.trueWith(0.40):
-                topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.topicProbabilities[user.topicClass]])
-                topic = self.topicProbabilities[user.topicClass][topicIndex][0]
-                if not GeneralMethods.trueWith(topic.stickiness): topic = None
-            else: topic = random.choice(self.topicProbabilities[user.topicClass])[0]
-        return topic
+        topics = []
+        if GeneralMethods.trueWith(user.messagingProbability):
+            for topicNumber in range(user.numberOfTopicsPerMessage):
+                topic=None
+                if GeneralMethods.trueWith(user.newTopicProbability): topic = Topic(len(currentTopics)); currentTopics.append(topic);
+                else: 
+                    if GeneralMethods.trueWith(user.probabilityOfPickingPopularTopic):
+                            if user.normalTopicSelection:
+                                topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.topicProbabilities[user.topicClass]])
+                                topic = self.topicProbabilities[user.topicClass][topicIndex][0]
+                                if not GeneralMethods.trueWith(topic.stickiness): topic = None
+                            else: 
+                                topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.topTopics])
+                                topic = self.topTopics[topicIndex][0]
+                    else: topic = random.choice(self.topicProbabilities[user.topicClass])[0]
+                topics.append(topic)
+        return topics
     def _updateTopicProbabilities(self, currentTimeStep, currentTopics, **conf):
-        self.topicProbabilities, self.topTopicProbabilities = defaultdict(list), None#defaultdict(list)
-        totalMessagesSentInPreviousIntervals, totalAgeScore = 0.0, 0.0
+        self.topicProbabilities, self.topTopics = defaultdict(list), []
+        totalMessagesSentInPreviousIntervals = 0.0
         numberOfPreviousIntervals = 1
         for topic in currentTopics: totalMessagesSentInPreviousIntervals+=topic.countDistribution[currentTimeStep-1]
         for topic in currentTopics:
@@ -90,13 +98,14 @@ class NonSpamModel(Model):
             for i in range(1, numberOfPreviousIntervals+1): topicScore+=topic.countDistribution[currentTimeStep-i]
             if totalMessagesSentInPreviousIntervals!=0: topicScore/=totalMessagesSentInPreviousIntervals
             else: topicScore = 1.0/len(currentTopics)
-            topicScore = topicScore * math.exp(-1*conf['topicDecay']*topic.age) #+ topic.stickiness
+            topicScore = topicScore * math.exp(topic.decayCoefficient*topic.age)
             self.topicProbabilities[topic.topicClass].append((topic, topicScore))
+#            if topic.stickiness>=stickinessLowerThreshold: self.topTopics.append((topic, topicScore))
+        for topicClass in self.topicProbabilities.keys()[:]: self.topTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)[:1]
+        
         self.lastObservedTimeStep=currentTimeStep
         
-def run(model, numberOfTimeSteps=200, 
-        addUsersMethod=User.addNewUsers, noOfUsers=10000, analysisFrequency=1, 
-        **conf):
+def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUsers=10000, analysisFrequency=1, **conf):
     currentTopics = []
     currentUsers = []
     addUsersMethod(currentUsers, noOfUsers, **conf)
@@ -113,10 +122,9 @@ def run(model, numberOfTimeSteps=200,
     
 if __name__ == '__main__':
 #    model=Model()
-    model = NonSpamModel()
+    model = MixedUsersModel()
     GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
-    conf = {'model': model, 'newTopicProbability': 0.001, 'userMessagingProbability': 0.1, 'topicDecay': 3}
+    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'ratio': {'normal': 0.97, 'spammer': 0.03}}
     run(**conf)
     model.analysis(modeling=False)
     model.plotTrendingTopics()
-    
