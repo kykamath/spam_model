@@ -20,6 +20,8 @@ class Topic(object):
         self.decayCoefficient = -3
         if GeneralMethods.trueWith(0.05): self.stickiness = random.uniform(stickinessLowerThreshold, 1.0)
         else: self.stickiness = random.uniform(0.0, 0.1)
+        #Non-modeling attributes.
+        self.color = GeneralMethods.getRandomColor()
         
     def __str__(self): return ' '.join([str(self.id)])
     @staticmethod
@@ -34,7 +36,6 @@ class Topic(object):
 class User(object):
     def __init__(self, id):
         self.id = id
-        self.topicClass = random.choice(topicClasses)
         self.messagingProbability = 0.1
         self.numberOfTopicsPerMessage = 1
     def __str__(self): return ' '.join([str(self.id)])
@@ -58,16 +59,14 @@ class User(object):
 class NormalUser(User):
     def __init__(self, id):
         super(NormalUser, self).__init__(id)
+        self.topicClass = random.choice(topicClasses)
         self.probabilityOfPickingPopularTopic = 0.40
         self.newTopicProbability = 0.001
-        self.normalTopicSelection = True
 
 class Spammer(User):
     def __init__(self, id):
         super(Spammer, self).__init__(id)
+        self.topicClass = None
         self.probabilityOfPickingPopularTopic = 1.0
         self.newTopicProbability = 0.0
-        self.normalTopicSelection = False
-#        self.numberOfTopicsPerMessage = int(random.uniform(1,3))
         
-User.addUsersUsingRatio([], 100, **{'ratio': {'normal': 0.97, 'spammer': 0.03}})

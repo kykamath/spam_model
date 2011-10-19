@@ -50,16 +50,19 @@ class Model(object):
             for data in FileIO.iterateJsonFromFile(self.modelFile):
                 if 'conf' not in data:
                     for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
-            for topic in topicsDataX: plt.fill_between(topicsDataX[topic], topicsDataY[topic], color=GeneralMethods.getRandomColor(), alpha=1.0)
+                else: topicColorMap=data['topic_colors']
+            for topic in topicsDataX: plt.fill_between(topicsDataX[topic], topicsDataY[topic], color=topicColorMap[str(topic)], alpha=1.0)
             plt.show()
-            plt.savefig(self.modelFile+'.pdf')
+#            plt.savefig(self.modelFile+'.pdf')
     def plotTrendingTopics(self):
-        topicsDataX, topicsDataY, trendingTopics = defaultdict(list), defaultdict(list), []
+        topicsDataX, topicsDataY, trendingTopics, topicColorMap = defaultdict(list), defaultdict(list), [], {}
         for data in FileIO.iterateJsonFromFile(self.modelFile):
             if 'conf' not in data:
                 for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
-            else: trendingTopics=data['trending_topics']
-        for topic in trendingTopics: plt.fill_between(topicsDataX[str(topic)], topicsDataY[str(topic)], color=GeneralMethods.getRandomColor(), alpha=1.0)
+            else: 
+                trendingTopics=data['trending_topics']
+                topicColorMap=data['topic_colors']
+        for topic in trendingTopics: plt.fill_between(topicsDataX[str(topic)], topicsDataY[str(topic)], color=topicColorMap[str(topic)], alpha=1.0)
         plt.show()
 #        plt.savefig(self.modelFile+'_tt.pdf')
             
@@ -78,7 +81,7 @@ class MixedUsersModel(Model):
                 if GeneralMethods.trueWith(user.newTopicProbability): topic = Topic(len(currentTopics)); currentTopics.append(topic);
                 else: 
                     if GeneralMethods.trueWith(user.probabilityOfPickingPopularTopic):
-                            if user.normalTopicSelection:
+                            if user.topicClass!=None:
                                 topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.topicProbabilities[user.topicClass]])
                                 topic = self.topicProbabilities[user.topicClass][topicIndex][0]
                                 if not GeneralMethods.trueWith(topic.stickiness): topic = None
@@ -116,6 +119,7 @@ def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUs
         model.process(currentTimeStep, currentTopics, currentUsers, **conf)
         analysis.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, currentUsers=currentUsers)
     iterationInfo  = {'trending_topics': [topic.id for topic in currentTopics if topic.stickiness>=stickinessLowerThreshold],
+                      'topic_colors': dict((str(topic.id), topic.color) for topic in currentTopics),
                       'conf': conf}
     FileIO.writeToFileAsJson(iterationInfo, model.modelFile)
     
@@ -123,7 +127,7 @@ if __name__ == '__main__':
 #    model=Model()
     model = MixedUsersModel()
     GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
-    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'ratio': {'normal': 0.97, 'spammer': 0.03}}
+    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'ratio': {'normal': 1.0, 'spammer': 0.00}}
     run(**conf)
     model.analysis(modeling=False)
     model.plotTrendingTopics()
