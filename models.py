@@ -25,20 +25,20 @@ def modified_log(i):
 class Model(object):
     def __init__(self, id=RANDOM_MODEL):
         self.modelFile = spamModelFolder+id
-    def topicSelectionMethod(self, currentTimeStep, user, currentTopics, **conf): 
-        topics = []
+    def messageSelectionMethod(self, currentTimeStep, user, currentTopics, **conf): 
+        message = None
         if GeneralMethods.trueWith(user.messagingProbability):
-            if GeneralMethods.trueWith(user.newTopicProbability): topic = Topic(len(currentTopics)); currentTopics.append(topic); topics.append(topic)
-            else: topics.append(random.choice(currentTopics))
-        return topics
+            if GeneralMethods.trueWith(user.newTopicProbability): topic = Topic(len(currentTopics)); currentTopics.append(topic); message=user.generateMessage(currentTimeStep, topic)
+            else: message=user.generateMessage(currentTimeStep, random.choice(currentTopics))
+        return message
     def process(self, currentTimeStep, currentTopics, currentUsers, **conf):
         if not currentTopics: Topic.addNewTopics(currentTopics, 300)
         for user in currentUsers:
-            topics = self.topicSelectionMethod(currentTimeStep, user, currentTopics, **conf)
-            for topic in topics:
-                if topic:
-                    topic.countDistribution[currentTimeStep]+=1
-                    topic.totalCount+=1
+            message = self.messageSelectionMethod(currentTimeStep, user, currentTopics, **conf)
+            if message:
+                topic = message.topic
+                topic.countDistribution[currentTimeStep]+=1
+                topic.totalCount+=1
     def analysis(self, currentTimeStep=None, currentTopics=None, currentUsers=None, modeling=True):
         if modeling:
             topicDistribution = dict((str(topic.id), {'total': topic.totalCount, 'timeStep': topic.countDistribution[currentTimeStep]}) for topic in currentTopics)
@@ -72,25 +72,25 @@ class MixedUsersModel(Model):
         self.lastObservedTimeStep = None
         self.topicProbabilities = None
         self.topTopics = None
-    def topicSelectionMethod(self, currentTimeStep, user, currentTopics, **conf):
+    def messageSelectionMethod(self, currentTimeStep, user, currentTopics, **conf):
         if self.lastObservedTimeStep!=currentTimeStep: self._updateTopicProbabilities(currentTimeStep, currentTopics, **conf)
-        topics = []
+        message = None
         if GeneralMethods.trueWith(user.messagingProbability):
-            for topicNumber in range(user.numberOfTopicsPerMessage):
-                topic=None
-                if GeneralMethods.trueWith(user.newTopicProbability): topic = Topic(len(currentTopics)); currentTopics.append(topic);
-                else: 
-                    if GeneralMethods.trueWith(user.probabilityOfPickingPopularTopic):
-                            if user.topicClass!=None:
-                                topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.topicProbabilities[user.topicClass]])
-                                topic = self.topicProbabilities[user.topicClass][topicIndex][0]
-                                if not GeneralMethods.trueWith(topic.stickiness): topic = None
-                            else: 
-                                topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.topTopics])
-                                topic = self.topTopics[topicIndex][0]
-                    else: topic = random.choice(self.topicProbabilities[user.topicClass])[0]
-                topics.append(topic)
-        return topics
+#            for topicNumber in range(user.numberOfTopicsPerMessage):
+            if GeneralMethods.trueWith(user.newTopicProbability): topic = Topic(len(currentTopics)); currentTopics.append(topic); message=user.generateMessage(currentTimeStep, topic)
+            else: 
+                if GeneralMethods.trueWith(user.probabilityOfPickingPopularTopic):
+                        if user.topicClass!=None:
+                            topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.topicProbabilities[user.topicClass]])
+                            topic = self.topicProbabilities[user.topicClass][topicIndex][0]
+                            message=user.generateMessage(currentTimeStep, topic)
+                            if not GeneralMethods.trueWith(topic.stickiness): message = None
+                        else: 
+                            topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.topTopics])
+                            topic = self.topTopics[topicIndex][0]
+                            message=user.generateMessage(currentTimeStep, topic)
+                else: message=user.generateMessage(currentTimeStep, random.choice(self.topicProbabilities[user.topicClass])[0])
+        return message
     def _updateTopicProbabilities(self, currentTimeStep, currentTopics, **conf):
         self.topicProbabilities, self.topTopics = defaultdict(list), []
         totalMessagesSentInPreviousIntervals = 0.0
@@ -104,7 +104,6 @@ class MixedUsersModel(Model):
             topicScore = topicScore * math.exp(topic.decayCoefficient*topic.age)
             self.topicProbabilities[topic.topicClass].append((topic, topicScore))
         for topicClass in self.topicProbabilities.keys()[:]: self.topTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)[:1]
-        
         self.lastObservedTimeStep=currentTimeStep
         
 def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUsers=10000, analysisFrequency=1, **conf):
@@ -127,7 +126,7 @@ if __name__ == '__main__':
 #    model=Model()
     model = MixedUsersModel()
     GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
-    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'ratio': {'normal': 1.0, 'spammer': 0.00}}
+    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'ratio': {'normal': 0.97, 'spammer': 0.03}}
     run(**conf)
     model.analysis(modeling=False)
     model.plotTrendingTopics()

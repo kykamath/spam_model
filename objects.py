@@ -6,9 +6,23 @@ Created on Oct 17, 2011
 from collections import defaultdict
 import random
 from library.classes import GeneralMethods
-from settings import stickinessLowerThreshold
+from settings import stickinessLowerThreshold, noOfPayloadsPerTopic,\
+    noOfPayloadsPerSpammer
 
 topicClasses = range(4)
+
+class PayLoad(object):
+    def __init__(self, id, generatorId):
+        self.id = str(generatorId)+'_'+str(id)
+        self.generatorId = generatorId
+        self.isSpam = False
+    @staticmethod
+    def generatePayloads(generatorId, noOfPayLoadsToGenerate): return [PayLoad(id, generatorId) for id in range(noOfPayLoadsToGenerate)]
+
+class SpamPayLoad(PayLoad):
+    def __init__(self, id, spammerId):
+        super(SpamPayLoad, self).__init__(id, spammerId)
+        self.isSpam = True
 
 class Topic(object):
     def __init__(self, id):
@@ -20,9 +34,10 @@ class Topic(object):
         self.decayCoefficient = -3
         if GeneralMethods.trueWith(0.05): self.stickiness = random.uniform(stickinessLowerThreshold, 1.0)
         else: self.stickiness = random.uniform(0.0, 0.1)
+        self.payloads = PayLoad.generatePayloads(self.id, noOfPayloadsPerTopic)
         #Non-modeling attributes.
         self.color = GeneralMethods.getRandomColor()
-        
+    def getPayLoad(self): return random.choice(self.payloads)
     def __str__(self): return ' '.join([str(self.id)])
     @staticmethod
     def incrementTopicAge(currentTopics):
@@ -33,12 +48,23 @@ class Topic(object):
         else: initialId = currentTopics[-1].id+1
         [currentTopics.append(Topic(initialId+i)) for i in range(noOfTopicsToAdd)]
         
+class Message:
+    def __init__(self, id, timeStep, payLoad, topic):
+        self.id = id
+        self.timeStep = timeStep
+        self.payLoad = payLoad
+        self.topic = topic
+        
 class User(object):
     def __init__(self, id):
         self.id = id
         self.messagingProbability = 0.1
         self.numberOfTopicsPerMessage = 1
+        self.messagesSent = 0
     def __str__(self): return ' '.join([str(self.id)])
+    def generateMessage(self, timeStep, topic):
+        self.messagesSent+=1
+        return Message(str(self.id)+'_'+str(self.messagesSent), timeStep, topic.getPayLoad(), topic)
     @staticmethod
     def addNormalUsers(currentUsers, noOfUsersToAdd, **conf):
         if not currentUsers: initialId = 0
@@ -69,4 +95,9 @@ class Spammer(User):
         self.topicClass = None
         self.probabilityOfPickingPopularTopic = 1.0
         self.newTopicProbability = 0.0
+        self.payLoads = PayLoad.generatePayloads(id, noOfPayloadsPerSpammer)
+    def getPayLoad(self): return random.choice(self.payLoads)
+    def generateMessage(self, timeStep, topic):
+        self.messagesSent+=1
+        return Message(str(self.id)+'_'+str(self.messagesSent), timeStep, self.getPayLoad(), topic)
         

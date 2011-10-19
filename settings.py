@@ -6,4 +6,6 @@ Created on Oct 17, 2011
 #spamModelFolder='/mnt/chevron/kykamath/data/spam_model/'
 spamModelFolder='spam_model/'
 
-stickinessLowerThreshold=0.6
+stickinessLowerThreshold = 0.6
+noOfPayloadsPerTopic = 100
+noOfPayloadsPerSpammer = 5
