@@ -8,4 +8,5 @@ spamModelFolder='spam_model/'
 
 stickinessLowerThreshold = 0.6
 noOfPayloadsPerTopic = 100
-noOfPayloadsPerSpammer = 5
+noOfPayloadsPerSpammer = 1
+noOfMessagesToCalculateSpammness = 10

@@ -23,7 +23,9 @@ class SpamPayLoad(PayLoad):
     def __init__(self, id, spammerId):
         super(SpamPayLoad, self).__init__(id, spammerId)
         self.isSpam = True
-
+    @staticmethod
+    def generatePayloads(generatorId, noOfPayLoadsToGenerate): return [SpamPayLoad(id, generatorId) for id in range(noOfPayLoadsToGenerate)]
+    
 class Topic(object):
     def __init__(self, id):
         self.id = id
@@ -95,7 +97,8 @@ class Spammer(User):
         self.topicClass = None
         self.probabilityOfPickingPopularTopic = 1.0
         self.newTopicProbability = 0.0
-        self.payLoads = PayLoad.generatePayloads(id, noOfPayloadsPerSpammer)
+#        self.messagingProbability = 0.5
+        self.payLoads = SpamPayLoad.generatePayloads(id, noOfPayloadsPerSpammer)
     def getPayLoad(self): return random.choice(self.payLoads)
     def generateMessage(self, timeStep, topic):
         self.messagesSent+=1

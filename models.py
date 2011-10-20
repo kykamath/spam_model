@@ -10,8 +10,10 @@ from library.classes import GeneralMethods
 from objects import Topic, User
 import random, math
 from library.file_io import FileIO
-from settings import spamModelFolder, stickinessLowerThreshold
+from settings import spamModelFolder, stickinessLowerThreshold,\
+    noOfMessagesToCalculateSpammness
 from collections import defaultdict
+from itertools import groupby
 from operator import itemgetter
 import matplotlib.pyplot as plt
 
@@ -21,10 +23,32 @@ MIXED_USERS_MODEL = 'mixed_users'
 def modified_log(i):
     if i==0: return 0
     else: return math.log(i)
+    
+def norm(k): return sum([1/(math.log((1+i),2)) for i in range(1,k+1)])
+def spammness(messages, norm): return sum([1/(math.log((1+i),2)) for m,i in zip(messages, range(1,len(messages)+1)) if m.payLoad.isSpam])/norm
+norm_k=norm(noOfMessagesToCalculateSpammness)
+
+
+class RankingModel:
+    @staticmethod
+    def latestMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): return sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True)[:noOfMessages]
+    @staticmethod
+    def popularMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
+        def getEarliestMessage(messages): return sorted(messages, key=lambda m: m.timeStep, reverse=True)[0]
+        payLoads, messageIdToMessage, payLoadsToMessageMap = [], {},defaultdict(list)
+        for m in topicToMessagesMap[queryTopic]:
+            payLoads.append(m.payLoad.id)
+            messageIdToMessage[m.id] = m
+            payLoadsToMessageMap[m.payLoad.id].append(m)
+        rankedPayLoads = sorted([(id, len(list(occurences))) for id, occurences in groupby(sorted(payLoads))], key=itemgetter(1), reverse=True)[:noOfMessages]
+        return [getEarliestMessage(payLoadsToMessageMap[pid]) for pid,_ in rankedPayLoads]
 
 class Model(object):
     def __init__(self, id=RANDOM_MODEL):
         self.modelFile = spamModelFolder+id
+        self.topicToMessagesMap = defaultdict(list)
+        self.topicsDistributionInTheTimeSet = defaultdict(int)
+        self.totalMessages, self.messagesWithSpamPayload = 0, 0
     def messageSelectionMethod(self, currentTimeStep, user, currentTopics, **conf): 
         message = None
         if GeneralMethods.trueWith(user.messagingProbability):
@@ -39,6 +63,10 @@ class Model(object):
                 topic = message.topic
                 topic.countDistribution[currentTimeStep]+=1
                 topic.totalCount+=1
+                self.topicToMessagesMap[topic.id].append(message)
+                self.totalMessages+=1
+                if message.payLoad.isSpam: self.messagesWithSpamPayload+=1
+                self.topicsDistributionInTheTimeSet[topic.id]+=1
     def analysis(self, currentTimeStep=None, currentTopics=None, currentUsers=None, modeling=True):
         if modeling:
             topicDistribution = dict((str(topic.id), {'total': topic.totalCount, 'timeStep': topic.countDistribution[currentTimeStep]}) for topic in currentTopics)
@@ -54,6 +82,13 @@ class Model(object):
             for topic in topicsDataX: plt.fill_between(topicsDataX[topic], topicsDataY[topic], color=topicColorMap[str(topic)], alpha=1.0)
             plt.show()
 #            plt.savefig(self.modelFile+'.pdf')
+    def measureQuality(self, currentTimeStep, currentTopics, rankingMethod):
+        topTopics = sorted(self.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:5]
+        self.topicsDistributionInTheTimeSet = defaultdict(int)
+        for queryTopic,_ in topTopics:
+            print spammness(rankingMethod(queryTopic, self.topicToMessagesMap), norm_k)
+#            print sum([ 1 for m,i in zip(messages, range(len(messages))) if m.payLoad.isSpam])
+            
     def plotTrendingTopics(self):
         topicsDataX, topicsDataY, trendingTopics, topicColorMap = defaultdict(list), defaultdict(list), [], {}
         for data in FileIO.iterateJsonFromFile(self.modelFile):
@@ -105,17 +140,19 @@ class MixedUsersModel(Model):
         for topicClass in self.topicProbabilities.keys()[:]: self.topTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)[:1]
         self.lastObservedTimeStep=currentTimeStep
         
-def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUsers=10000, analysisFrequency=1, **conf):
+def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, rankingMethod=RankingModel.latestMessages, noOfUsers=10000, analysisFrequency=1, qualityMeasuringFrequency=1, **conf):
     currentTopics = []
     currentUsers = []
     addUsersMethod(currentUsers, noOfUsers, **conf)
     
     analysis = FixedIntervalMethod(model.analysis, analysisFrequency)
+    measureQuality = FixedIntervalMethod(model.measureQuality, qualityMeasuringFrequency)
     
     for currentTimeStep in range(numberOfTimeSteps):
         Topic.incrementTopicAge(currentTopics)
         model.process(currentTimeStep, currentTopics, currentUsers, **conf)
         analysis.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, currentUsers=currentUsers)
+        measureQuality.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, rankingMethod=rankingMethod)
     iterationInfo  = {'trending_topics': [topic.id for topic in currentTopics if topic.stickiness>=stickinessLowerThreshold],
                       'topic_colors': dict((str(topic.id), topic.color) for topic in currentTopics),
                       'conf': conf}
@@ -125,7 +162,8 @@ if __name__ == '__main__':
 #    model=Model()
     model = MixedUsersModel()
     GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
-    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'ratio': {'normal': 0.97, 'spammer': 0.03}}
+    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'rankingMethod':RankingModel.popularMessages, 'ratio': {'normal': 0.9, 'spammer': 0.1}}
     run(**conf)
-    model.analysis(modeling=False)
-    model.plotTrendingTopics()
+    print model.totalMessages, model.messagesWithSpamPayload
+#    model.analysis(modeling=False)
+#    model.plotTrendingTopics()
