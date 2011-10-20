@@ -29,9 +29,53 @@ def spammness(messages, norm): return sum([1/(math.log((1+i),2)) for m,i in zip(
 norm_k=norm(noOfMessagesToCalculateSpammness)
 
 
-class RankingModel:
+class Analysis:
     @staticmethod
-    def latestMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): return sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True)[:noOfMessages]
+    def trendCurves(iterationData=None, modeling=True, modelFile=None):
+        currentTimeStep, model, currentTopics, _, finalCall, conf = [None]*6
+        if iterationData: 
+            currentTimeStep, model, currentTopics, _, finalCall, conf = iterationData
+            modelFile = spamModelFolder+model.id
+        if modeling:
+            if not finalCall:
+                topicDistribution = dict((str(topic.id), {'total': topic.totalCount, 'timeStep': topic.countDistribution[currentTimeStep]}) for topic in currentTopics)
+                print currentTimeStep
+                FileIO.writeToFileAsJson({'t':currentTimeStep, 'topics':topicDistribution}, modelFile)
+            else:
+                iterationInfo  = {'trending_topics': [topic.id for topic in currentTopics if topic.stickiness>=stickinessLowerThreshold],
+                      'topic_colors': dict((str(topic.id), topic.color) for topic in currentTopics),
+                      'conf': conf}
+                FileIO.writeToFileAsJson(iterationInfo, modelFile)
+        else:
+            topicsDataX = defaultdict(list)
+            topicsDataY = defaultdict(list)
+            for data in FileIO.iterateJsonFromFile(modelFile):
+                if 'conf' not in data:
+                    for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
+                else: topicColorMap=data['topic_colors']; trendingTopics=data['trending_topics']
+            for topic in topicsDataX: plt.fill_between(topicsDataX[topic], topicsDataY[topic], color=topicColorMap[str(topic)], alpha=1.0)
+            plt.figure()
+            for topic in trendingTopics: plt.fill_between(topicsDataX[str(topic)], topicsDataY[str(topic)], color=topicColorMap[str(topic)], alpha=1.0)
+            plt.show()
+    @staticmethod
+    def measureRankingQuality(iterationData=None):
+        _, model, _, _, _, conf = [None]*6
+        if iterationData: 
+            _, model, _, _, _, conf = iterationData
+            rankingMethods = conf['rankingMethods']
+        topTopics = sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:5]
+        model.topicsDistributionInTheTimeSet = defaultdict(int)
+        for queryTopic,_ in topTopics:
+            for rankingMethod in rankingMethods: 
+                ranking_id, messages = rankingMethod(queryTopic, model.topicToMessagesMap)
+                print ranking_id, spammness(messages, norm_k)
+
+class RankingModel:
+    LATEST_MESSAGES = 'latest_messages'
+    POPULAR_MESSAGES = 'popular_messages'
+    @staticmethod
+    def latestMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
+        return (RankingModel.LATEST_MESSAGES, sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True)[:noOfMessages])
     @staticmethod
     def popularMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
         def getEarliestMessage(messages): return sorted(messages, key=lambda m: m.timeStep, reverse=True)[0]
@@ -41,11 +85,12 @@ class RankingModel:
             messageIdToMessage[m.id] = m
             payLoadsToMessageMap[m.payLoad.id].append(m)
         rankedPayLoads = sorted([(id, len(list(occurences))) for id, occurences in groupby(sorted(payLoads))], key=itemgetter(1), reverse=True)[:noOfMessages]
-        return [getEarliestMessage(payLoadsToMessageMap[pid]) for pid,_ in rankedPayLoads]
+        return (RankingModel.POPULAR_MESSAGES, [getEarliestMessage(payLoadsToMessageMap[pid]) for pid,_ in rankedPayLoads])
 
 class Model(object):
     def __init__(self, id=RANDOM_MODEL):
-        self.modelFile = spamModelFolder+id
+        self.id = id
+#        self.modelFile = spamModelFolder+id
         self.topicToMessagesMap = defaultdict(list)
         self.topicsDistributionInTheTimeSet = defaultdict(int)
         self.totalMessages, self.messagesWithSpamPayload = 0, 0
@@ -67,39 +112,6 @@ class Model(object):
                 self.totalMessages+=1
                 if message.payLoad.isSpam: self.messagesWithSpamPayload+=1
                 self.topicsDistributionInTheTimeSet[topic.id]+=1
-    def analysis(self, currentTimeStep=None, currentTopics=None, currentUsers=None, modeling=True):
-        if modeling:
-            topicDistribution = dict((str(topic.id), {'total': topic.totalCount, 'timeStep': topic.countDistribution[currentTimeStep]}) for topic in currentTopics)
-            print currentTimeStep
-            FileIO.writeToFileAsJson({'t':currentTimeStep, 'topics':topicDistribution}, self.modelFile)
-        else:
-            topicsDataX = defaultdict(list)
-            topicsDataY = defaultdict(list)
-            for data in FileIO.iterateJsonFromFile(self.modelFile):
-                if 'conf' not in data:
-                    for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
-                else: topicColorMap=data['topic_colors']
-            for topic in topicsDataX: plt.fill_between(topicsDataX[topic], topicsDataY[topic], color=topicColorMap[str(topic)], alpha=1.0)
-            plt.show()
-#            plt.savefig(self.modelFile+'.pdf')
-    def measureQuality(self, currentTimeStep, currentTopics, rankingMethod):
-        topTopics = sorted(self.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:5]
-        self.topicsDistributionInTheTimeSet = defaultdict(int)
-        for queryTopic,_ in topTopics:
-            print spammness(rankingMethod(queryTopic, self.topicToMessagesMap), norm_k)
-#            print sum([ 1 for m,i in zip(messages, range(len(messages))) if m.payLoad.isSpam])
-            
-    def plotTrendingTopics(self):
-        topicsDataX, topicsDataY, trendingTopics, topicColorMap = defaultdict(list), defaultdict(list), [], {}
-        for data in FileIO.iterateJsonFromFile(self.modelFile):
-            if 'conf' not in data:
-                for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
-            else: 
-                trendingTopics=data['trending_topics']
-                topicColorMap=data['topic_colors']
-        for topic in trendingTopics: plt.fill_between(topicsDataX[str(topic)], topicsDataY[str(topic)], color=topicColorMap[str(topic)], alpha=1.0)
-        plt.show()
-#        plt.savefig(self.modelFile+'_tt.pdf')
             
 class MixedUsersModel(Model):
     def __init__(self): 
@@ -140,30 +152,36 @@ class MixedUsersModel(Model):
         for topicClass in self.topicProbabilities.keys()[:]: self.topTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)[:1]
         self.lastObservedTimeStep=currentTimeStep
         
-def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, rankingMethod=RankingModel.latestMessages, noOfUsers=10000, analysisFrequency=1, qualityMeasuringFrequency=1, **conf):
+#def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUsers=10000, analysisMethods = [], analysisFrequency=1, qualityMeasuringFrequency=1, **conf):
+def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUsers=10000, analysisMethods = [], **conf):
     currentTopics = []
     currentUsers = []
     addUsersMethod(currentUsers, noOfUsers, **conf)
     
-    analysis = FixedIntervalMethod(model.analysis, analysisFrequency)
-    measureQuality = FixedIntervalMethod(model.measureQuality, qualityMeasuringFrequency)
+#    trendCurves = FixedIntervalMethod(model.trendCurves, analysisFrequency)
+#    measureQuality = FixedIntervalMethod(model.measureQuality, qualityMeasuringFrequency)
+    analysis = []
+    for method, frequency in analysisMethods: analysis.append(FixedIntervalMethod(method, frequency))
     
     for currentTimeStep in range(numberOfTimeSteps):
         Topic.incrementTopicAge(currentTopics)
         model.process(currentTimeStep, currentTopics, currentUsers, **conf)
-        analysis.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, currentUsers=currentUsers)
-        measureQuality.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, rankingMethod=rankingMethod)
-    iterationInfo  = {'trending_topics': [topic.id for topic in currentTopics if topic.stickiness>=stickinessLowerThreshold],
-                      'topic_colors': dict((str(topic.id), topic.color) for topic in currentTopics),
-                      'conf': conf}
-    FileIO.writeToFileAsJson(iterationInfo, model.modelFile)
+        for method in analysis: method.call(currentTimeStep, iterationData=(currentTimeStep, model, currentTopics, currentUsers, False, conf))
+#        trendCurves.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, currentUsers=currentUsers)
+#        measureQuality.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, rankingMethod=rankingMethod)
+#    iterationInfo  = {'trending_topics': [topic.id for topic in currentTopics if topic.stickiness>=stickinessLowerThreshold],
+#                      'topic_colors': dict((str(topic.id), topic.color) for topic in currentTopics),
+#                      'conf': conf}
+#    FileIO.writeToFileAsJson(iterationInfo, model.modelFile)
+    currentTimeStep+=1
+    for method in analysis: method.call(currentTimeStep, iterationData=(currentTimeStep, model, currentTopics, currentUsers, True, conf))
     
-if __name__ == '__main__':
+#if __name__ == '__main__':
 #    model=Model()
-    model = MixedUsersModel()
-    GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
-    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'rankingMethod':RankingModel.popularMessages, 'ratio': {'normal': 0.9, 'spammer': 0.1}}
-    run(**conf)
-    print model.totalMessages, model.messagesWithSpamPayload
+#    model = MixedUsersModel()
+#    GeneralMethods.runCommand('rm -rf %s'%model.modelFile)
+#    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.trendCurves, 1)], 'ratio': {'normal': 0.9, 'spammer': 0.1}}
+#    run(**conf)
+#    print model.totalMessages, model.messagesWithSpamPayload
 #    model.analysis(modeling=False)
 #    model.plotTrendingTopics()
