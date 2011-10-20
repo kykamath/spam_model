@@ -97,6 +97,7 @@ class Spammer(User):
         self.topicClass = None
         self.probabilityOfPickingPopularTopic = 1.0
         self.newTopicProbability = 0.0
+        self.messagingProbability = 0.5
 #        self.messagingProbability = 0.5
         self.payLoads = SpamPayLoad.generatePayloads(id, noOfPayloadsPerSpammer)
     def getPayLoad(self): return random.choice(self.payLoads)

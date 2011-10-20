@@ -10,8 +10,7 @@ from library.classes import GeneralMethods
 from objects import Topic, User
 import random, math
 from library.file_io import FileIO
-from settings import spamModelFolder, stickinessLowerThreshold,\
-    noOfMessagesToCalculateSpammness
+from settings import stickinessLowerThreshold, noOfMessagesToCalculateSpammness
 from collections import defaultdict
 from itertools import groupby
 from operator import itemgetter
@@ -27,29 +26,28 @@ def modified_log(i):
 def norm(k): return sum([1/(math.log((1+i),2)) for i in range(1,k+1)])
 def spammness(messages, norm): return sum([1/(math.log((1+i),2)) for m,i in zip(messages, range(1,len(messages)+1)) if m.payLoad.isSpam])/norm
 norm_k=norm(noOfMessagesToCalculateSpammness)
+print sum([1/(math.log((1+i),2)) for m,i in zip([0,0,0,0,0,1,1,1,1,1], range(1,11)) if m])/norm_k
 
 
 class Analysis:
     @staticmethod
-    def trendCurves(iterationData=None, modeling=True, modelFile=None):
-        currentTimeStep, model, currentTopics, _, finalCall, conf = [None]*6
+    def trendCurves(iterationData=None, experimentFileName=None):
         if iterationData: 
-            currentTimeStep, model, currentTopics, _, finalCall, conf = iterationData
-            modelFile = spamModelFolder+model.id
-        if modeling:
+            currentTimeStep, _, currentTopics, _, finalCall, conf = iterationData
+            experimentFileName = conf['experimentFileName']
             if not finalCall:
                 topicDistribution = dict((str(topic.id), {'total': topic.totalCount, 'timeStep': topic.countDistribution[currentTimeStep]}) for topic in currentTopics)
                 print currentTimeStep
-                FileIO.writeToFileAsJson({'t':currentTimeStep, 'topics':topicDistribution}, modelFile)
+                FileIO.writeToFileAsJson({'t':currentTimeStep, 'topics':topicDistribution}, experimentFileName)
             else:
                 iterationInfo  = {'trending_topics': [topic.id for topic in currentTopics if topic.stickiness>=stickinessLowerThreshold],
                       'topic_colors': dict((str(topic.id), topic.color) for topic in currentTopics),
                       'conf': conf}
-                FileIO.writeToFileAsJson(iterationInfo, modelFile)
+                FileIO.writeToFileAsJson(iterationInfo, experimentFileName)
         else:
             topicsDataX = defaultdict(list)
             topicsDataY = defaultdict(list)
-            for data in FileIO.iterateJsonFromFile(modelFile):
+            for data in FileIO.iterateJsonFromFile(experimentFileName):
                 if 'conf' not in data:
                     for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
                 else: topicColorMap=data['topic_colors']; trendingTopics=data['trending_topics']
@@ -58,17 +56,21 @@ class Analysis:
             for topic in trendingTopics: plt.fill_between(topicsDataX[str(topic)], topicsDataY[str(topic)], color=topicColorMap[str(topic)], alpha=1.0)
             plt.show()
     @staticmethod
-    def measureRankingQuality(iterationData=None):
-        _, model, _, _, _, conf = [None]*6
+    def measureRankingQuality(iterationData=None, experimentFileName=None):
         if iterationData: 
-            _, model, _, _, _, conf = iterationData
-            rankingMethods = conf['rankingMethods']
-        topTopics = sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:5]
-        model.topicsDistributionInTheTimeSet = defaultdict(int)
-        for queryTopic,_ in topTopics:
-            for rankingMethod in rankingMethods: 
-                ranking_id, messages = rankingMethod(queryTopic, model.topicToMessagesMap)
-                print ranking_id, spammness(messages, norm_k)
+            currentTimeStep, model, _, _, finalCall, conf = iterationData
+            if not finalCall:
+                rankingMethods = conf['rankingMethods']
+                experimentFileName = conf['experimentFileName']
+                topTopics = sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:5]
+                model.topicsDistributionInTheTimeSet = defaultdict(int)
+                iterationData = {'currentTimeStep': currentTimeStep, 'spammmess': defaultdict(list)}
+                for rankingMethod in rankingMethods: 
+                    for queryTopic,_ in topTopics:
+                        ranking_id, messages = rankingMethod(queryTopic, model.topicToMessagesMap)
+                        iterationData['spammmess'][ranking_id].append(spammness(messages, norm_k))
+#                        print ranking_id, spammness(messages, norm_k)
+                FileIO.writeToFileAsJson(iterationData, experimentFileName)
 
 class RankingModel:
     LATEST_MESSAGES = 'latest_messages'
@@ -152,27 +154,18 @@ class MixedUsersModel(Model):
         for topicClass in self.topicProbabilities.keys()[:]: self.topTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)[:1]
         self.lastObservedTimeStep=currentTimeStep
         
-#def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUsers=10000, analysisMethods = [], analysisFrequency=1, qualityMeasuringFrequency=1, **conf):
 def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUsers=10000, analysisMethods = [], **conf):
-    currentTopics = []
-    currentUsers = []
+    currentTopics, currentUsers = [], []
     addUsersMethod(currentUsers, noOfUsers, **conf)
-    
-#    trendCurves = FixedIntervalMethod(model.trendCurves, analysisFrequency)
-#    measureQuality = FixedIntervalMethod(model.measureQuality, qualityMeasuringFrequency)
+
     analysis = []
     for method, frequency in analysisMethods: analysis.append(FixedIntervalMethod(method, frequency))
     
     for currentTimeStep in range(numberOfTimeSteps):
+        print currentTimeStep
         Topic.incrementTopicAge(currentTopics)
         model.process(currentTimeStep, currentTopics, currentUsers, **conf)
         for method in analysis: method.call(currentTimeStep, iterationData=(currentTimeStep, model, currentTopics, currentUsers, False, conf))
-#        trendCurves.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, currentUsers=currentUsers)
-#        measureQuality.call(currentTimeStep, currentTimeStep=currentTimeStep, currentTopics=currentTopics, rankingMethod=rankingMethod)
-#    iterationInfo  = {'trending_topics': [topic.id for topic in currentTopics if topic.stickiness>=stickinessLowerThreshold],
-#                      'topic_colors': dict((str(topic.id), topic.color) for topic in currentTopics),
-#                      'conf': conf}
-#    FileIO.writeToFileAsJson(iterationInfo, model.modelFile)
     currentTimeStep+=1
     for method in analysis: method.call(currentTimeStep, iterationData=(currentTimeStep, model, currentTopics, currentUsers, True, conf))
     
