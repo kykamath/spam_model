@@ -22,7 +22,7 @@ def trendCurves():
     
 def performanceAsPercentageOfSpammersVaries(generateData):
     experimentData = defaultdict(dict)
-    for iteration in range(25):
+    for iteration in range(10):
         for spammerPercentage in range(1,21):
             spammerPercentage = spammerPercentage*0.05
             experimentFileName = spamModelFolder+'performanceAsPercentageOfSpammersVaries/%s/%0.3f'%(iteration,spammerPercentage)
@@ -64,7 +64,7 @@ def performanceAsPercentageOfSpammersVaries(generateData):
         
 
 #trendCurves()
-performanceAsPercentageOfSpammersVaries(generateData=True)
+performanceAsPercentageOfSpammersVaries(generateData=False)
 
 
 #model = MixedUsersModel()
