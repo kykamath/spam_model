@@ -10,3 +10,6 @@ stickinessLowerThreshold = 0.6
 noOfPayloadsPerTopic = 100
 noOfPayloadsPerSpammer = 1
 noOfMessagesToCalculateSpammness = 10
+
+globalSpammerId = ':ilab:'
+noOfGlobalPayloads = 10

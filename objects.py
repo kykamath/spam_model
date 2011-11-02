@@ -7,7 +7,7 @@ from collections import defaultdict
 import random
 from library.classes import GeneralMethods
 from settings import stickinessLowerThreshold, noOfPayloadsPerTopic,\
-    noOfPayloadsPerSpammer
+    noOfPayloadsPerSpammer, noOfGlobalPayloads, globalSpammerId
 
 topicClasses = range(4)
 
@@ -76,7 +76,12 @@ class User(object):
     def addSpammers(currentUsers, noOfUsersToAdd, **conf):
         if not currentUsers: initialId = 0
         else: initialId = currentUsers[-1].id+1
-        [currentUsers.append(Spammer(initialId+i)) for i in range(noOfUsersToAdd)]
+#        for i in range(noOfUsersToAdd):
+#            u = Spammer(initialId+i)
+#            if 'spammerAttributes' in conf:
+#                
+#            currentUsers.append(u)
+        [currentUsers.append(Spammer(initialId+i, **conf)) for i in range(noOfUsersToAdd)]
     @staticmethod
     def addUsersUsingRatio(currentUsers, noOfUsersToAdd, **conf):
         ratio = conf['ratio']
@@ -92,14 +97,17 @@ class NormalUser(User):
         self.newTopicProbability = 0.001
 
 class Spammer(User):
-    def __init__(self, id):
+    globalPayloads = None
+    def __init__(self, id, **conf):
         super(Spammer, self).__init__(id)
         self.topicClass = None
         self.probabilityOfPickingPopularTopic = 1.0
         self.newTopicProbability = 0.0
-        self.messagingProbability = 0.5
-#        self.messagingProbability = 0.5
-        self.payLoads = SpamPayLoad.generatePayloads(id, noOfPayloadsPerSpammer)
+        self.messagingProbability = conf.get('spammerMessagingProbability', 0.5)
+        if conf.get('noOfGlobalPayloads', False): 
+            if not Spammer.globalPayloads: Spammer.globalPayloads = SpamPayLoad.generatePayloads(globalSpammerId, conf.get('noOfGlobalPayloads', noOfGlobalPayloads))
+            self.payLoads = [random.choice(Spammer.globalPayloads)]
+        else: self.payLoads = SpamPayLoad.generatePayloads(id, conf.get('noOfPayloadsPerSpammer', noOfPayloadsPerSpammer))
     def getPayLoad(self): return random.choice(self.payLoads)
     def generateMessage(self, timeStep, topic):
         self.messagesSent+=1
