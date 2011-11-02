@@ -63,6 +63,8 @@ class Analysis:
                 rankingMethods = conf['rankingMethods']
                 experimentFileName = conf['experimentFileName']
                 topTopics = sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:5]
+#                topTopics = random.sample(sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:10], min(len(model.topicsDistributionInTheTimeSet),5))
+#                topTopics = random.sample(model.topicsDistributionInTheTimeSet.items(), min(len(model.topicsDistributionInTheTimeSet),5))
                 model.topicsDistributionInTheTimeSet = defaultdict(int)
                 iterationData = {'currentTimeStep': currentTimeStep, 'spammmess': defaultdict(list)}
                 for rankingMethod in rankingMethods: 
@@ -75,6 +77,7 @@ class Analysis:
 class RankingModel:
     LATEST_MESSAGES = 'latest_messages'
     POPULAR_MESSAGES = 'popular_messages'
+    marker = {LATEST_MESSAGES: 'o', POPULAR_MESSAGES: 's'}
     @staticmethod
     def latestMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
         return (RankingModel.LATEST_MESSAGES, sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True)[:noOfMessages])
@@ -104,6 +107,7 @@ class Model(object):
         return message
     def process(self, currentTimeStep, currentTopics, currentUsers, **conf):
         if not currentTopics: Topic.addNewTopics(currentTopics, 300)
+        random.shuffle(currentUsers)
         for user in currentUsers:
             message = self.messageSelectionMethod(currentTimeStep, user, currentTopics, **conf)
             if message:
@@ -137,7 +141,9 @@ class MixedUsersModel(Model):
                             topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.topTopics])
                             topic = self.topTopics[topicIndex][0]
                             message=user.generateMessage(currentTimeStep, topic)
-                else: message=user.generateMessage(currentTimeStep, random.choice(self.topicProbabilities[user.topicClass])[0])
+                else: 
+                    if user.topicClass!=None:
+                        message=user.generateMessage(currentTimeStep, random.choice(self.topicProbabilities[user.topicClass])[0])
         return message
     def _updateTopicProbabilities(self, currentTimeStep, currentTopics, **conf):
         self.topicProbabilities, self.topTopics = defaultdict(list), []
@@ -157,7 +163,7 @@ class MixedUsersModel(Model):
 def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUsers=10000, analysisMethods = [], **conf):
     currentTopics, currentUsers = [], []
     addUsersMethod(currentUsers, noOfUsers, **conf)
-
+    random.shuffle(currentUsers)
     analysis = []
     for method, frequency in analysisMethods: analysis.append(FixedIntervalMethod(method, frequency))
     

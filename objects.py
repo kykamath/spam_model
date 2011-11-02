@@ -101,9 +101,9 @@ class Spammer(User):
     def __init__(self, id, **conf):
         super(Spammer, self).__init__(id)
         self.topicClass = None
-        self.probabilityOfPickingPopularTopic = 1.0
+        self.probabilityOfPickingPopularTopic = 0.75
         self.newTopicProbability = 0.0
-        self.messagingProbability = conf.get('spammerMessagingProbability', 0.5)
+        self.messagingProbability = conf.get('spammerMessagingProbability', 0.2)
         if conf.get('noOfGlobalPayloads', False): 
             if not Spammer.globalPayloads: Spammer.globalPayloads = SpamPayLoad.generatePayloads(globalSpammerId, conf.get('noOfGlobalPayloads', noOfGlobalPayloads))
             self.payLoads = [random.choice(Spammer.globalPayloads)]

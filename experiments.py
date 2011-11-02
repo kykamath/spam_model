@@ -1,10 +1,13 @@
 '''
+TODO: Percentage of top topics used. Choose top 5 query topics or 20, or 50
+
 Created on Oct 20, 2011
 
 @author: kykamath
 '''
 from models import MixedUsersModel, RankingModel, run, Analysis
 from library.classes import GeneralMethods
+#from library.plotting import smooth
 from objects import User
 from settings import spamModelFolder
 from library.file_io import FileIO
@@ -22,10 +25,11 @@ def trendCurves():
     
 def performanceAsPercentageOfSpammersVaries(generateData):
     experimentData = defaultdict(dict)
-    for iteration in range(10):
-        for spammerPercentage in range(1,21):
+    for iteration in range(3):
+        for spammerPercentage in range(0,21):
             spammerPercentage = spammerPercentage*0.05
             experimentFileName = spamModelFolder+'performanceAsPercentageOfSpammersVaries/%s/%0.3f'%(iteration,spammerPercentage)
+            print experimentFileName
             if generateData:
                 model = MixedUsersModel()
                 conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 1-spammerPercentage, 'spammer': spammerPercentage},
@@ -51,13 +55,12 @@ def performanceAsPercentageOfSpammersVaries(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker='s')
+        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])
         plt.xlabel('Percentage of spammers')
         plt.ylabel('Spammness')
         plt.title('Spammness with changing percentage of spammers')
         plt.legend(loc=2)
         plt.show()
-        
         
 def performanceAsSpammerBudgetVaries(generateData):
     experimentData = defaultdict(dict)
@@ -176,7 +179,6 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
         plt.legend(loc=2)
         plt.show()
         plt.savefig('performanceAsNoOfGlobalPayloadsVary.png')
-        
 
 #trendCurves()
 performanceAsPercentageOfSpammersVaries(generateData=False)
