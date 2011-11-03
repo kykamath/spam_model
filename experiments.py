@@ -147,8 +147,9 @@ def performanceAsSpammerPayloadVaries(generateData):
         
 def performanceAsNoOfGlobalPayloadsVary(generateData):
     experimentData = defaultdict(dict)
-    for iteration in range(10):
+    for iteration in range(3):
         for noOfGlobalSpammerPayloads in range(1,11):
+#        for noOfGlobalSpammerPayloads in range(10,11):
             experimentFileName = spamModelFolder+'performanceAsNoOfGlobalPayloadsVary/%s/%0.3f'%(iteration,noOfGlobalSpammerPayloads)
             print experimentFileName
             if generateData:
@@ -182,14 +183,14 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
         plt.ylabel('Spammness')
         plt.title('Spammness with changing global payloads')
         plt.legend(loc=2)
-        plt.show()
+#        plt.show()
         plt.savefig('performanceAsNoOfGlobalPayloadsVary.png')
 
 #trendCurves()
 #performanceAsPercentageOfSpammersVaries(generateData=False)
 #performanceAsSpammerBudgetVaries(generateData=False)
 #performanceAsSpammerPayloadVaries(generateData=False)
-performanceAsNoOfGlobalPayloadsVary(generateData=False)
+performanceAsNoOfGlobalPayloadsVary(generateData=True)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50

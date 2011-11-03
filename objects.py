@@ -103,7 +103,7 @@ class Spammer(User):
         self.topicClass = None
         self.probabilityOfPickingPopularTopic = 0.75
         self.newTopicProbability = 0.0
-        self.messagingProbability = conf.get('spammerMessagingProbability', 0.2)
+        self.messagingProbability = conf.get('spammerMessagingProbability', 1.0)
         if conf.get('noOfGlobalSpammerPayloads', False): 
             if not Spammer.globalPayloads: Spammer.globalPayloads = SpamPayLoad.generatePayloads(globalSpammerId, conf.get('noOfGlobalSpammerPayloads', noOfGlobalSpammerPayloads))
             self.payLoads = [random.choice(Spammer.globalPayloads)]

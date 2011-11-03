@@ -73,7 +73,7 @@ class Analysis:
 #                            print 'c'
 #                        print rankingMethod, spammness(messages, norm_k)
                         iterationData['spammmess'][ranking_id].append(spammness(messages, norm_k))
-#                        print ranking_id, spammness(messages, norm_k)
+                        print ranking_id, spammness(messages, norm_k)
                 FileIO.writeToFileAsJson(iterationData, experimentFileName)
                 model.topicsDistributionInTheTimeSet = defaultdict(int)
 
@@ -93,6 +93,8 @@ class RankingModel:
             messageIdToMessage[m.id] = m
             payLoadsToMessageMap[m.payLoad.id].append(m)
         rankedPayLoads = sorted([(id, len(list(occurences))) for id, occurences in groupby(sorted(payLoads))], key=itemgetter(1), reverse=True)[:noOfMessages]
+        print rankedPayLoads
+#        print 'x'
         return (RankingModel.POPULAR_MESSAGES, [getEarliestMessage(payLoadsToMessageMap[pid]) for pid,_ in rankedPayLoads])
 
 class Model(object):
@@ -145,8 +147,7 @@ class MixedUsersModel(Model):
                             topic = self.topTopics[topicIndex][0]
                             message=user.generateMessage(currentTimeStep, topic)
                 else: 
-                    if user.topicClass!=None:
-                        message=user.generateMessage(currentTimeStep, random.choice(self.topicProbabilities[user.topicClass])[0])
+                    if user.topicClass!=None: message=user.generateMessage(currentTimeStep, random.choice(self.topicProbabilities[user.topicClass])[0])
                     else:
                         topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.allTopics])
                         topic = self.allTopics[topicIndex][0]
