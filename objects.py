@@ -7,7 +7,7 @@ from collections import defaultdict
 import random
 from library.classes import GeneralMethods
 from settings import stickinessLowerThreshold, noOfPayloadsPerTopic,\
-    noOfPayloadsPerSpammer, noOfGlobalPayloads, globalSpammerId
+    noOfPayloadsPerSpammer, noOfGlobalSpammerPayloads, globalSpammerId
 
 topicClasses = range(4)
 
@@ -104,8 +104,8 @@ class Spammer(User):
         self.probabilityOfPickingPopularTopic = 0.75
         self.newTopicProbability = 0.0
         self.messagingProbability = conf.get('spammerMessagingProbability', 0.2)
-        if conf.get('noOfGlobalPayloads', False): 
-            if not Spammer.globalPayloads: Spammer.globalPayloads = SpamPayLoad.generatePayloads(globalSpammerId, conf.get('noOfGlobalPayloads', noOfGlobalPayloads))
+        if conf.get('noOfGlobalSpammerPayloads', False): 
+            if not Spammer.globalPayloads: Spammer.globalPayloads = SpamPayLoad.generatePayloads(globalSpammerId, conf.get('noOfGlobalSpammerPayloads', noOfGlobalSpammerPayloads))
             self.payLoads = [random.choice(Spammer.globalPayloads)]
         else: self.payLoads = SpamPayLoad.generatePayloads(id, conf.get('noOfPayloadsPerSpammer', noOfPayloadsPerSpammer))
     def getPayLoad(self): return random.choice(self.payLoads)

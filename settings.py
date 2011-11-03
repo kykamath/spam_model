@@ -12,4 +12,4 @@ noOfPayloadsPerSpammer = 1
 noOfMessagesToCalculateSpammness = 10
 
 globalSpammerId = ':ilab:'
-noOfGlobalPayloads = 10
+noOfGlobalSpammerPayloads = 10

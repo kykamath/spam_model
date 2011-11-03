@@ -65,14 +65,17 @@ class Analysis:
                 topTopics = sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:5]
 #                topTopics = random.sample(sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:10], min(len(model.topicsDistributionInTheTimeSet),5))
 #                topTopics = random.sample(model.topicsDistributionInTheTimeSet.items(), min(len(model.topicsDistributionInTheTimeSet),5))
-                model.topicsDistributionInTheTimeSet = defaultdict(int)
                 iterationData = {'currentTimeStep': currentTimeStep, 'spammmess': defaultdict(list)}
                 for rankingMethod in rankingMethods: 
                     for queryTopic,_ in topTopics:
                         ranking_id, messages = rankingMethod(queryTopic, model.topicToMessagesMap)
+#                        if spammness(messages, norm_k)==0:
+#                            print 'c'
+                        print spammness(messages, norm_k)
                         iterationData['spammmess'][ranking_id].append(spammness(messages, norm_k))
 #                        print ranking_id, spammness(messages, norm_k)
                 FileIO.writeToFileAsJson(iterationData, experimentFileName)
+                model.topicsDistributionInTheTimeSet = defaultdict(int)
 
 class RankingModel:
     LATEST_MESSAGES = 'latest_messages'
@@ -144,9 +147,13 @@ class MixedUsersModel(Model):
                 else: 
                     if user.topicClass!=None:
                         message=user.generateMessage(currentTimeStep, random.choice(self.topicProbabilities[user.topicClass])[0])
+                    else:
+                        topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.allTopics])
+                        topic = self.allTopics[topicIndex][0]
+                        message=user.generateMessage(currentTimeStep, topic)
         return message
     def _updateTopicProbabilities(self, currentTimeStep, currentTopics, **conf):
-        self.topicProbabilities, self.topTopics = defaultdict(list), []
+        self.topicProbabilities, self.topTopics, self.allTopics = defaultdict(list), [], []
         totalMessagesSentInPreviousIntervals = 0.0
         numberOfPreviousIntervals = 1
         for topic in currentTopics: totalMessagesSentInPreviousIntervals+=topic.countDistribution[currentTimeStep-1]
@@ -157,7 +164,9 @@ class MixedUsersModel(Model):
             else: topicScore = 1.0/len(currentTopics)
             topicScore = topicScore * math.exp(topic.decayCoefficient*topic.age)
             self.topicProbabilities[topic.topicClass].append((topic, topicScore))
-        for topicClass in self.topicProbabilities.keys()[:]: self.topTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)[:1]
+        for topicClass in self.topicProbabilities.keys()[:]: 
+            self.topTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)[:1]
+            self.allTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)
         self.lastObservedTimeStep=currentTimeStep
         
 def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUsers=10000, analysisMethods = [], **conf):

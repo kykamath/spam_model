@@ -26,8 +26,10 @@ def trendCurves():
 def performanceAsPercentageOfSpammersVaries(generateData):
     experimentData = defaultdict(dict)
     for iteration in range(3):
-        for spammerPercentage in range(0,21):
+        for spammerPercentage in range(1,21):
             spammerPercentage = spammerPercentage*0.05
+#        for spammerPercentage in range(0,10):
+#            spammerPercentage = spammerPercentage*0.005
             experimentFileName = spamModelFolder+'performanceAsPercentageOfSpammersVaries/%s/%0.3f'%(iteration,spammerPercentage)
             print experimentFileName
             if generateData:
@@ -64,10 +66,11 @@ def performanceAsPercentageOfSpammersVaries(generateData):
         
 def performanceAsSpammerBudgetVaries(generateData):
     experimentData = defaultdict(dict)
-    for iteration in range(5):
-        for spammerBudget in range(1,11):
+    for iteration in range(10):
+        for spammerBudget in range(0,11):
             spammerBudget = spammerBudget*0.1
             experimentFileName = spamModelFolder+'performanceAsSpammerBudgetVaries/%s/%0.3f'%(iteration,spammerBudget)
+            print experimentFileName
             if generateData:
                 model = MixedUsersModel()
                 conf = {'model': model, 'numberOfTimeSteps': 50, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.97, 'spammer': 0.03},
@@ -99,7 +102,7 @@ def performanceAsSpammerBudgetVaries(generateData):
         plt.ylabel('Spammness')
         plt.title('Spammness with changing spammer budget')
         plt.legend(loc=2)
-        plt.show()
+#        plt.show()
         plt.savefig('performanceAsSpammerBudgetVaries.png')
         
 def performanceAsSpammerPayloadVaries(generateData):
@@ -137,19 +140,20 @@ def performanceAsSpammerPayloadVaries(generateData):
         plt.xlabel('Spammer payload')
         plt.ylabel('Spammness')
         plt.title('Spammness with changing spammer payloads')
-        plt.legend(loc=2)
-        plt.show()
+        plt.legend(loc=6)
+#        plt.show()
         plt.savefig('performanceAsSpammerPayloadVaries.png')
         
 def performanceAsNoOfGlobalPayloadsVary(generateData):
     experimentData = defaultdict(dict)
-    for iteration in range(10):
-        for noOfGlobalPayloads in range(1,11):
-            experimentFileName = spamModelFolder+'performanceAsNoOfGlobalPayloadsVary/%s/%0.3f'%(iteration,noOfGlobalPayloads)
+    for iteration in range(3):
+        for noOfGlobalSpammerPayloads in range(1,11):
+            experimentFileName = spamModelFolder+'performanceAsNoOfGlobalPayloadsVary/%s/%0.3f'%(iteration,noOfGlobalSpammerPayloads)
+            print experimentFileName
             if generateData:
                 model = MixedUsersModel()
-                conf = {'model': model, 'numberOfTimeSteps': 50, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.97, 'spammer': 0.03},
-                        'noOfGlobalPayloads': noOfGlobalPayloads,
+                conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.97, 'spammer': 0.03},
+                        'noOfGlobalSpammerPayloads': noOfGlobalSpammerPayloads,
                         'rankingMethods':[RankingModel.latestMessages, RankingModel.popularMessages],
                         'experimentFileName': experimentFileName}
                 GeneralMethods.runCommand('rm -rf %s'%experimentFileName);run(**conf)
@@ -158,7 +162,7 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
                 for data in FileIO.iterateJsonFromFile(experimentFileName):
                     for ranking_id in data['spammmess']:
                         tempData[ranking_id]+=data['spammmess'][ranking_id]
-                experimentData[iteration][noOfGlobalPayloads]=tempData
+                experimentData[iteration][noOfGlobalSpammerPayloads]=tempData
     if not generateData:
         realDataY = defaultdict(dict)
         for iteration in experimentData:
@@ -181,12 +185,10 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
         plt.savefig('performanceAsNoOfGlobalPayloadsVary.png')
 
 #trendCurves()
-performanceAsPercentageOfSpammersVaries(generateData=False)
-#performanceAsPercentageOfSpammersVaries(generateData=False)
+performanceAsPercentageOfSpammersVaries(generateData=True)
 #performanceAsSpammerBudgetVaries(generateData=False)
 #performanceAsSpammerPayloadVaries(generateData=False)
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
-
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
