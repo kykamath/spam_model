@@ -37,7 +37,7 @@ class Analysis:
             experimentFileName = conf['experimentFileName']
             if not finalCall:
                 topicDistribution = dict((str(topic.id), {'total': topic.totalCount, 'timeStep': topic.countDistribution[currentTimeStep]}) for topic in currentTopics)
-                print currentTimeStep
+#                print currentTimeStep
                 FileIO.writeToFileAsJson({'t':currentTimeStep, 'topics':topicDistribution}, experimentFileName)
             else:
                 iterationInfo  = {'trending_topics': [topic.id for topic in currentTopics if topic.stickiness>=stickinessLowerThreshold],
@@ -62,7 +62,7 @@ class Analysis:
             if not finalCall:
                 rankingMethods = conf['rankingMethods']
                 experimentFileName = conf['experimentFileName']
-                topTopics = sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:5]
+                topTopics = sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:10]
 #                topTopics = random.sample(sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:10], min(len(model.topicsDistributionInTheTimeSet),5))
 #                topTopics = random.sample(model.topicsDistributionInTheTimeSet.items(), min(len(model.topicsDistributionInTheTimeSet),5))
                 iterationData = {'currentTimeStep': currentTimeStep, 'spammmess': defaultdict(list)}
@@ -71,7 +71,7 @@ class Analysis:
                         ranking_id, messages = rankingMethod(queryTopic, model.topicToMessagesMap)
 #                        if spammness(messages, norm_k)==0:
 #                            print 'c'
-                        print spammness(messages, norm_k)
+#                        print rankingMethod, spammness(messages, norm_k)
                         iterationData['spammmess'][ranking_id].append(spammness(messages, norm_k))
 #                        print ranking_id, spammness(messages, norm_k)
                 FileIO.writeToFileAsJson(iterationData, experimentFileName)
@@ -165,7 +165,7 @@ class MixedUsersModel(Model):
             topicScore = topicScore * math.exp(topic.decayCoefficient*topic.age)
             self.topicProbabilities[topic.topicClass].append((topic, topicScore))
         for topicClass in self.topicProbabilities.keys()[:]: 
-            self.topTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)[:1]
+            self.topTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)[:16]
             self.allTopics+=sorted(self.topicProbabilities[topicClass], key=itemgetter(1), reverse=True)
         self.lastObservedTimeStep=currentTimeStep
         
