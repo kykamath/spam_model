@@ -25,7 +25,7 @@ def trendCurves():
     
 def performanceAsPercentageOfSpammersVaries(generateData):
     experimentData = defaultdict(dict)
-    for iteration in range(10):
+    for iteration in range(3):
         for spammerPercentage in range(1,21):
             spammerPercentage = spammerPercentage*0.05
 #        for spammerPercentage in range(0,10):
@@ -62,7 +62,7 @@ def performanceAsPercentageOfSpammersVaries(generateData):
         plt.ylabel('Spammness')
         plt.title('Spammness with changing percentage of spammers')
         plt.legend(loc=2)
-#        plt.show()
+        plt.show()
         plt.savefig('performanceAsPercentageOfSpammersVaries.png')
         
 def performanceAsSpammerBudgetVaries(generateData):
@@ -147,7 +147,7 @@ def performanceAsSpammerPayloadVaries(generateData):
         
 def performanceAsNoOfGlobalPayloadsVary(generateData):
     experimentData = defaultdict(dict)
-    for iteration in range(3):
+    for iteration in range(10):
         for noOfGlobalSpammerPayloads in range(1,11):
 #        for noOfGlobalSpammerPayloads in range(10,11):
             experimentFileName = spamModelFolder+'performanceAsNoOfGlobalPayloadsVary/%s/%0.3f'%(iteration,noOfGlobalSpammerPayloads)
@@ -190,7 +190,7 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
 #performanceAsPercentageOfSpammersVaries(generateData=False)
 #performanceAsSpammerBudgetVaries(generateData=False)
 #performanceAsSpammerPayloadVaries(generateData=False)
-performanceAsNoOfGlobalPayloadsVary(generateData=True)
+performanceAsNoOfGlobalPayloadsVary(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50

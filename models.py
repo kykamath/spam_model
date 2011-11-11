@@ -26,7 +26,7 @@ def modified_log(i):
 def norm(k): return sum([1/(math.log((1+i),2)) for i in range(1,k+1)])
 def spammness(messages, norm): return sum([1/(math.log((1+i),2)) for m,i in zip(messages, range(1,len(messages)+1)) if m.payLoad.isSpam])/norm
 norm_k=norm(noOfMessagesToCalculateSpammness)
-print sum([1/(math.log((1+i),2)) for m,i in zip([0,0,0,0,0,1,1,1,1,1], range(1,11)) if m])/norm_k
+print sum([1/(math.log((1+i),2)) for m,i in zip([1,0,0,0,0,0,0,0,0,0], range(1,11)) if m])/norm_k
 
 
 class Analysis:
@@ -57,12 +57,24 @@ class Analysis:
             plt.show()
     @staticmethod
     def measureRankingQuality(iterationData=None, experimentFileName=None):
+#        def getTopTopics(model, noOfTopics):
+#            topics = set()
+#            topTopics = model.topTopics[:]
+#            while True:
+#                topicIndex = GeneralMethods.weightedChoice([i[1] for i in topTopics])
+#                topic = topTopics[topicIndex][0].id
+#                del topTopics[topicIndex]
+#                if topic not in topics: topics.add(topic)
+#                if len(topics)==noOfTopics or len(topics)==len(model.topTopics): break
+#            return [(t, 0) for t in topics]
+                
         if iterationData: 
             currentTimeStep, model, _, _, finalCall, conf = iterationData
             if not finalCall:
                 rankingMethods = conf['rankingMethods']
                 experimentFileName = conf['experimentFileName']
                 topTopics = sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:10]
+#                topTopics = getTopTopics(model, 10)
 #                topTopics = random.sample(sorted(model.topicsDistributionInTheTimeSet.iteritems(), key=itemgetter(1), reverse=True)[:10], min(len(model.topicsDistributionInTheTimeSet),5))
 #                topTopics = random.sample(model.topicsDistributionInTheTimeSet.items(), min(len(model.topicsDistributionInTheTimeSet),5))
                 iterationData = {'currentTimeStep': currentTimeStep, 'spammmess': defaultdict(list)}
@@ -73,7 +85,7 @@ class Analysis:
 #                            print 'c'
 #                        print rankingMethod, spammness(messages, norm_k)
                         iterationData['spammmess'][ranking_id].append(spammness(messages, norm_k))
-                        print ranking_id, spammness(messages, norm_k)
+#                        print ranking_id, spammness(messages, norm_k)
                 FileIO.writeToFileAsJson(iterationData, experimentFileName)
                 model.topicsDistributionInTheTimeSet = defaultdict(int)
 
@@ -93,7 +105,7 @@ class RankingModel:
             messageIdToMessage[m.id] = m
             payLoadsToMessageMap[m.payLoad.id].append(m)
         rankedPayLoads = sorted([(id, len(list(occurences))) for id, occurences in groupby(sorted(payLoads))], key=itemgetter(1), reverse=True)[:noOfMessages]
-        print rankedPayLoads
+#        print rankedPayLoads
 #        print 'x'
         return (RankingModel.POPULAR_MESSAGES, [getEarliestMessage(payLoadsToMessageMap[pid]) for pid,_ in rankedPayLoads])
 
