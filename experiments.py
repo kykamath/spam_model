@@ -25,7 +25,7 @@ def trendCurves():
     
 def performanceAsPercentageOfSpammersVaries(generateData):
     experimentData = defaultdict(dict)
-    for iteration in range(3):
+    for iteration in range(10):
         for spammerPercentage in range(1,21):
             spammerPercentage = spammerPercentage*0.05
 #        for spammerPercentage in range(0,10):
@@ -35,7 +35,7 @@ def performanceAsPercentageOfSpammersVaries(generateData):
             if generateData:
                 model = MixedUsersModel()
                 conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 1-spammerPercentage, 'spammer': spammerPercentage},
-                        'rankingMethods':[RankingModel.latestMessages, RankingModel.popularMessages],
+                        'rankingMethods':[RankingModel.latestMessages, RankingModel.latestMessagesDuplicatesRemoved, RankingModel.popularMessages],
                         'experimentFileName': experimentFileName}
                 GeneralMethods.runCommand('rm -rf %s'%experimentFileName);run(**conf)
             else:
@@ -62,7 +62,7 @@ def performanceAsPercentageOfSpammersVaries(generateData):
         plt.ylabel('Spammness')
         plt.title('Spammness with changing percentage of spammers')
         plt.legend(loc=2)
-        plt.show()
+#        plt.show()
         plt.savefig('performanceAsPercentageOfSpammersVaries.png')
         
 def performanceAsSpammerBudgetVaries(generateData):
@@ -76,7 +76,7 @@ def performanceAsSpammerBudgetVaries(generateData):
                 model = MixedUsersModel()
                 conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.97, 'spammer': 0.03},
                         'spammerMessagingProbability': spammerBudget,
-                        'rankingMethods':[RankingModel.latestMessages, RankingModel.popularMessages],
+                        'rankingMethods':[RankingModel.latestMessages, RankingModel.latestMessagesDuplicatesRemoved, RankingModel.popularMessages],
                         'experimentFileName': experimentFileName}
                 GeneralMethods.runCommand('rm -rf %s'%experimentFileName);run(**conf)
             else:
@@ -98,7 +98,7 @@ def performanceAsSpammerBudgetVaries(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker='s')
+        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])
         plt.xlabel('Spammer budget')
         plt.ylabel('Spammness')
         plt.title('Spammness with changing spammer budget')
@@ -115,7 +115,7 @@ def performanceAsSpammerPayloadVaries(generateData):
                 model = MixedUsersModel()
                 conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.97, 'spammer': 0.03},
                         'noOfPayloadsPerSpammer': spammerPayload,
-                        'rankingMethods':[RankingModel.latestMessages, RankingModel.popularMessages],
+                        'rankingMethods':[RankingModel.latestMessages, RankingModel.latestMessagesDuplicatesRemoved, RankingModel.popularMessages],
                         'experimentFileName': experimentFileName}
                 GeneralMethods.runCommand('rm -rf %s'%experimentFileName);run(**conf)
             else:
@@ -137,7 +137,7 @@ def performanceAsSpammerPayloadVaries(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker='s')
+        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])
         plt.xlabel('Spammer payload')
         plt.ylabel('Spammness')
         plt.title('Spammness with changing spammer payloads')
@@ -156,7 +156,7 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
                 model = MixedUsersModel()
                 conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.97, 'spammer': 0.03},
                         'noOfGlobalSpammerPayloads': noOfGlobalSpammerPayloads,
-                        'rankingMethods':[RankingModel.latestMessages, RankingModel.popularMessages],
+                        'rankingMethods':[RankingModel.latestMessages, RankingModel.latestMessagesDuplicatesRemoved, RankingModel.popularMessages],
                         'experimentFileName': experimentFileName}
                 GeneralMethods.runCommand('rm -rf %s'%experimentFileName);run(**conf)
             else:
@@ -178,19 +178,19 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker='s')
+        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])
         plt.xlabel('No. of global payloads')
         plt.ylabel('Spammness')
         plt.title('Spammness with changing global payloads')
-        plt.legend(loc=2)
+        plt.legend(loc=4)
 #        plt.show()
         plt.savefig('performanceAsNoOfGlobalPayloadsVary.png')
 
 #trendCurves()
-#performanceAsPercentageOfSpammersVaries(generateData=False)
+performanceAsPercentageOfSpammersVaries(generateData=False)
 #performanceAsSpammerBudgetVaries(generateData=False)
 #performanceAsSpammerPayloadVaries(generateData=False)
-performanceAsNoOfGlobalPayloadsVary(generateData=False)
+#performanceAsNoOfGlobalPayloadsVary(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50

@@ -91,11 +91,19 @@ class Analysis:
 
 class RankingModel:
     LATEST_MESSAGES = 'latest_messages'
+    LATEST_MESSAGES_DUPLICATES_REMOVED = 'latest_messages_dup_removed'
     POPULAR_MESSAGES = 'popular_messages'
-    marker = {LATEST_MESSAGES: 'o', POPULAR_MESSAGES: 's'}
+    marker = {LATEST_MESSAGES: 'o', POPULAR_MESSAGES: 's', LATEST_MESSAGES_DUPLICATES_REMOVED: '^'}
     @staticmethod
     def latestMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
         return (RankingModel.LATEST_MESSAGES, sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True)[:noOfMessages])
+    @staticmethod
+    def latestMessagesDuplicatesRemoved(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
+        messagesToReturn, observedPayload = [], set()
+        for message in sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True):
+            if message.payLoad.id not in observedPayload: messagesToReturn.append(message); observedPayload.add(message.payLoad.id)
+            if len(messagesToReturn)==noOfMessages: break
+        return (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, messagesToReturn)
     @staticmethod
     def popularMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
         def getEarliestMessage(messages): return sorted(messages, key=lambda m: m.timeStep, reverse=True)[0]
