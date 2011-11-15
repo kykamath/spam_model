@@ -81,9 +81,10 @@ class User(object):
     def addSpammersInRatio(currentUsers, noOfUsersToAdd, **conf):
         ratio = conf['spamRatio']
         if '%0.1f'%(ratio['localPayloads']+ratio['globalPayloads'])!='%0.1f'%1.0: raise Exception('Ratio Should sum to 1.0')
+        globalSpammerPayloads = conf.get('noOfGlobalSpammerPayloads', noOfGlobalSpammerPayloads)
         conf['noOfGlobalSpammerPayloads'] = False
         User.addSpammers(currentUsers, int(noOfUsersToAdd*ratio['localPayloads']), **conf)
-        conf['noOfGlobalSpammerPayloads'] = noOfGlobalSpammerPayloads
+        conf['noOfGlobalSpammerPayloads'] = globalSpammerPayloads
         User.addSpammers(currentUsers, int(noOfUsersToAdd*ratio['globalPayloads']), **conf)
     @staticmethod
     def addUsersUsingRatio(currentUsers, noOfUsersToAdd, **conf):
@@ -120,8 +121,9 @@ class Spammer(User):
     
 if __name__ == '__main__':
     currentUsers = []
-    conf = {'spamRatio': {'localPayloads': 0.75, 'globalPayloads': 0.25}}
+    conf = {'spamRatio': {'localPayloads': 0.75, 'globalPayloads': 0.25}, 'noOfGlobalSpammerPayloads':2}
     User.addSpammersInRatio(currentUsers, 100, **conf)
-    print currentUsers
+    for user in currentUsers:
+        print user.id, user.payLoads[0].id
     
         
