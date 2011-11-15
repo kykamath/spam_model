@@ -241,7 +241,7 @@ def performanceAsPercentageOfGlobalSpammerVaries(generateData):
 #performanceAsSpammerBudgetVaries(generateData=False)
 #performanceAsSpammerPayloadVaries(generateData=False)
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
-performanceAsPercentageOfGlobalSpammerVaries(generateData=True)
+performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
