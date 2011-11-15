@@ -76,11 +76,11 @@ class User(object):
     def addSpammers(currentUsers, noOfUsersToAdd, **conf):
         if not currentUsers: initialId = 0
         else: initialId = currentUsers[-1].id+1
-#        for i in range(noOfUsersToAdd):
-#            u = Spammer(initialId+i)
-#            if 'spammerAttributes' in conf:
-#                
-#            currentUsers.append(u)
+        [currentUsers.append(Spammer(initialId+i, **conf)) for i in range(noOfUsersToAdd)]
+    @staticmethod
+    def addSpammersInRatio(currentUsers, noOfUsersToAdd, **conf):
+        if not currentUsers: initialId = 0
+        else: initialId = currentUsers[-1].id+1
         [currentUsers.append(Spammer(initialId+i, **conf)) for i in range(noOfUsersToAdd)]
     @staticmethod
     def addUsersUsingRatio(currentUsers, noOfUsersToAdd, **conf):
@@ -104,7 +104,7 @@ class Spammer(User):
         self.probabilityOfPickingPopularTopic = 0.75
         self.newTopicProbability = 0.0
         self.messagingProbability = conf.get('spammerMessagingProbability', 1.0)
-        Spammer.globalPayloads = None
+#        Spammer.globalPayloads = None
         if conf.get('noOfGlobalSpammerPayloads', False): 
             if not Spammer.globalPayloads: Spammer.globalPayloads = SpamPayLoad.generatePayloads(globalSpammerId, conf.get('noOfGlobalSpammerPayloads', noOfGlobalSpammerPayloads))
             self.payLoads = [random.choice(Spammer.globalPayloads)]
@@ -113,4 +113,13 @@ class Spammer(User):
     def generateMessage(self, timeStep, topic):
         self.messagesSent+=1
         return Message(str(self.id)+'_'+str(self.messagesSent), timeStep, self.getPayLoad(), topic)
+    
+#class SpammerWithMultiplePaylaods(Spammer):
+#    def __init__(self, id, **conf):
+#        super(Spammer, self).__init__(id)
+#        self.topicClass = None
+#        self.probabilityOfPickingPopularTopic = 0.75
+#        self.newTopicProbability = 0.0
+#        self.messagingProbability = conf.get('spammerMessagingProbability', 1.0)
+#        self.payLoads = SpamPayLoad.generatePayloads(id, conf.get('noOfPayloadsPerSpammer', noOfPayloadsPerSpammer))
         

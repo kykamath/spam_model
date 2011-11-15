@@ -8,12 +8,13 @@ Created on Oct 20, 2011
 from models import MixedUsersModel, RankingModel, run, Analysis
 from library.classes import GeneralMethods
 #from library.plotting import smooth
-from objects import User
+from objects import User, Spammer
 from settings import spamModelFolder
 from library.file_io import FileIO
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
+from library.plotting import smooth
 
 def trendCurves():
     model = MixedUsersModel()
@@ -148,8 +149,9 @@ def performanceAsSpammerPayloadVaries(generateData):
 def performanceAsNoOfGlobalPayloadsVary(generateData):
     experimentData = defaultdict(dict)
     for iteration in range(10):
-        for noOfGlobalSpammerPayloads in range(1,11):
+        for noOfGlobalSpammerPayloads in range(1,500):
 #        for noOfGlobalSpammerPayloads in range(10,11):
+            Spammer.globalPayloads = None
             experimentFileName = spamModelFolder+'performanceAsNoOfGlobalPayloadsVary/%s/%0.3f'%(iteration,noOfGlobalSpammerPayloads)
             print experimentFileName
             if generateData:
@@ -178,7 +180,10 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])
+#        for ranking_id in dataY: 
+#            dy = [np.mean(realDataY[ranking_id][x]) for x in dataX[:20]] + list(smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]])) #+smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]]
+#            plt.semilogx(dataX, dy[:len(dataX)], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])
+        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])  
         plt.xlabel('No. of global payloads')
         plt.ylabel('Spammness')
         plt.title('Spammness with changing global payloads')
@@ -187,10 +192,10 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
         plt.savefig('performanceAsNoOfGlobalPayloadsVary.png')
 
 #trendCurves()
-performanceAsPercentageOfSpammersVaries(generateData=False)
+#performanceAsPercentageOfSpammersVaries(generateData=False)
 #performanceAsSpammerBudgetVaries(generateData=False)
 #performanceAsSpammerPayloadVaries(generateData=False)
-#performanceAsNoOfGlobalPayloadsVary(generateData=False)
+performanceAsNoOfGlobalPayloadsVary(generateData=True)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
