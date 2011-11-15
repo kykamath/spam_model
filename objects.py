@@ -79,15 +79,19 @@ class User(object):
         [currentUsers.append(Spammer(initialId+i, **conf)) for i in range(noOfUsersToAdd)]
     @staticmethod
     def addSpammersInRatio(currentUsers, noOfUsersToAdd, **conf):
-        if not currentUsers: initialId = 0
-        else: initialId = currentUsers[-1].id+1
-        [currentUsers.append(Spammer(initialId+i, **conf)) for i in range(noOfUsersToAdd)]
+        ratio = conf['spamRatio']
+        if '%0.1f'%(ratio['localPayloads']+ratio['globalPayloads'])!='%0.1f'%1.0: raise Exception('Ratio Should sum to 1.0')
+        conf['noOfGlobalSpammerPayloads'] = False
+        User.addSpammers(currentUsers, int(noOfUsersToAdd*ratio['localPayloads']), **conf)
+        conf['noOfGlobalSpammerPayloads'] = noOfGlobalSpammerPayloads
+        User.addSpammers(currentUsers, int(noOfUsersToAdd*ratio['globalPayloads']), **conf)
     @staticmethod
     def addUsersUsingRatio(currentUsers, noOfUsersToAdd, **conf):
         ratio = conf['ratio']
         if '%0.1f'%(ratio['normal']+ratio['spammer'])!='%0.1f'%1.0: raise Exception('Ratio Should sum to 1.0')
         User.addNormalUsers(currentUsers, int(noOfUsersToAdd*ratio['normal']), **conf)
-        User.addSpammers(currentUsers, int(noOfUsersToAdd*ratio['spammer']), **conf)
+        if conf.get('spamRatio', False): User.addSpammersInRatio(currentUsers, int(noOfUsersToAdd*ratio['spammer']), **conf)
+        else: User.addSpammers(currentUsers, int(noOfUsersToAdd*ratio['spammer']), **conf)
     
 class NormalUser(User):
     def __init__(self, id):
@@ -114,12 +118,10 @@ class Spammer(User):
         self.messagesSent+=1
         return Message(str(self.id)+'_'+str(self.messagesSent), timeStep, self.getPayLoad(), topic)
     
-#class SpammerWithMultiplePaylaods(Spammer):
-#    def __init__(self, id, **conf):
-#        super(Spammer, self).__init__(id)
-#        self.topicClass = None
-#        self.probabilityOfPickingPopularTopic = 0.75
-#        self.newTopicProbability = 0.0
-#        self.messagingProbability = conf.get('spammerMessagingProbability', 1.0)
-#        self.payLoads = SpamPayLoad.generatePayloads(id, conf.get('noOfPayloadsPerSpammer', noOfPayloadsPerSpammer))
+if __name__ == '__main__':
+    currentUsers = []
+    conf = {'spamRatio': {'localPayloads': 0.75, 'globalPayloads': 0.25}}
+    User.addSpammersInRatio(currentUsers, 100, **conf)
+    print currentUsers
+    
         
