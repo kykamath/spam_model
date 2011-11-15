@@ -231,7 +231,7 @@ def performanceAsPercentageOfGlobalSpammerVaries(generateData):
         for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])
         plt.xlabel('Percentage of spammers using global stratergy')
         plt.ylabel('Spammness')
-        plt.title('Spammness with changing percentage of spammers')
+        plt.title('Spammness with spammers using mixed strategy')
         plt.legend(loc=2)
 #        plt.show()
         plt.savefig('performanceAsPercentageOfGlobalSpammerVaries.png')
