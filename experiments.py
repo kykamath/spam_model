@@ -180,10 +180,10 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-#        for ranking_id in dataY: 
-#            dy = [np.mean(realDataY[ranking_id][x]) for x in dataX[:20]] + list(smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]])) #+smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]]
-#            plt.semilogx(dataX, dy[:len(dataX)], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])
-        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])  
+        for ranking_id in dataY: 
+            dy = [np.mean(realDataY[ranking_id][x]) for x in dataX[:20]] + list(smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]])) #+smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]]
+            plt.semilogx(dataX, dy[:len(dataX)], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])
+#        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=ranking_id, lw=2, marker=RankingModel.marker[ranking_id])  
         plt.xlabel('No. of global payloads')
         plt.ylabel('Spammness')
         plt.title('Spammness with changing global payloads')
