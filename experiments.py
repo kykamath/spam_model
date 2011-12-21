@@ -19,7 +19,7 @@ from library.plotting import smooth
 def trendCurves():
     model = MixedUsersModel()
     experimentFileName = spamModelFolder+model.id
-    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.trendCurves, 1)], 'ratio': {'normal': 0.97, 'spammer': 0.03},
+    conf = {'model': model, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.trendCurves, 1)], 'ratio': {'normal': 0.985, 'spammer': 0.015},
             'experimentFileName': experimentFileName}
     GeneralMethods.runCommand('rm -rf %s'%experimentFileName); run(**conf)
     Analysis.trendCurves(experimentFileName=experimentFileName)
@@ -63,8 +63,8 @@ def performanceAsPercentageOfSpammersVaries(generateData):
         plt.ylabel('Spammness')
         plt.title('Spammness with changing percentage of spammers')
         plt.legend(loc=2)
-#        plt.show()
-        plt.savefig('performanceAsPercentageOfSpammersVaries.png')
+        plt.show()
+#        plt.savefig('performanceAsPercentageOfSpammersVaries.png')
         
 def performanceAsSpammerBudgetVaries(generateData):
     experimentData = defaultdict(dict)
@@ -75,7 +75,7 @@ def performanceAsSpammerBudgetVaries(generateData):
             print experimentFileName
             if generateData:
                 model = MixedUsersModel()
-                conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.97, 'spammer': 0.03},
+                conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.985, 'spammer': 0.015},
                         'spammerMessagingProbability': spammerBudget,
                         'rankingMethods':[RankingModel.latestMessages, RankingModel.latestMessagesDuplicatesRemoved, RankingModel.popularMessages],
                         'experimentFileName': experimentFileName}
@@ -104,8 +104,8 @@ def performanceAsSpammerBudgetVaries(generateData):
         plt.ylabel('Spammness')
         plt.title('Spammness with changing spammer budget')
         plt.legend(loc=2)
-#        plt.show()
-        plt.savefig('performanceAsSpammerBudgetVaries.png')
+        plt.show()
+#        plt.savefig('performanceAsSpammerBudgetVaries.png')
         
 def performanceAsSpammerPayloadVaries(generateData):
     experimentData = defaultdict(dict)
@@ -114,7 +114,7 @@ def performanceAsSpammerPayloadVaries(generateData):
             experimentFileName = spamModelFolder+'performanceAsSpammerPayloadVaries/%s/%0.3f'%(iteration,spammerPayload)
             if generateData:
                 model = MixedUsersModel()
-                conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.97, 'spammer': 0.03},
+                conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.985, 'spammer': 0.015},
                         'noOfPayloadsPerSpammer': spammerPayload,
                         'rankingMethods':[RankingModel.latestMessages, RankingModel.latestMessagesDuplicatesRemoved, RankingModel.popularMessages],
                         'experimentFileName': experimentFileName}
@@ -156,7 +156,7 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
             print experimentFileName
             if generateData:
                 model = MixedUsersModel()
-                conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.97, 'spammer': 0.03},
+                conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 0.985, 'spammer': 0.015},
                         'noOfGlobalSpammerPayloads': noOfGlobalSpammerPayloads,
                         'rankingMethods':[RankingModel.latestMessages, RankingModel.latestMessagesDuplicatesRemoved, RankingModel.popularMessages],
                         'experimentFileName': experimentFileName}
@@ -203,7 +203,7 @@ def performanceAsPercentageOfGlobalSpammerVaries(generateData):
             if generateData:
                 model = MixedUsersModel()
                 conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 
-                        'ratio': {'normal': 0.97, 'spammer': 0.03},
+                        'ratio': {'normal': 0.985, 'spammer': 0.015},
                         'spamRatio': {'localPayloads': 1-spammerPercentage, 'globalPayloads': spammerPercentage},
                         'noOfGlobalSpammerPayloads': 10,
                         'rankingMethods':[RankingModel.latestMessages, RankingModel.latestMessagesDuplicatesRemoved, RankingModel.popularMessages],
@@ -239,9 +239,9 @@ def performanceAsPercentageOfGlobalSpammerVaries(generateData):
 #trendCurves()
 #performanceAsPercentageOfSpammersVaries(generateData=False)
 #performanceAsSpammerBudgetVaries(generateData=False)
-#performanceAsSpammerPayloadVaries(generateData=False)
-#performanceAsNoOfGlobalPayloadsVary(generateData=False)
-performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
+#performanceAsSpammerPayloadVaries(generateData=True)
+#performanceAsNoOfGlobalPayloadsVary(generateData=True)
+performanceAsPercentageOfGlobalSpammerVaries(generateData=True)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
