@@ -96,6 +96,10 @@ class RankingModel:
     marker = {LATEST_MESSAGES: 'o', POPULAR_MESSAGES: 's', LATEST_MESSAGES_DUPLICATES_REMOVED: '^'}
     @staticmethod
     def latestMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
+        payLoadsAndUsers = sorted([(m.payLoad.id, m.id.split('_')[0]) for m in topicToMessagesMap[queryTopic]], key=itemgetter(0))
+        payLoadsAndUsers = [(k, list(l)) for k,l in groupby(payLoadsAndUsers, key=itemgetter(0))]
+        payLoadsAndUsers = [(id, len(set(t[1] for t in l)), len(l) )for id, l in payLoadsAndUsers]
+        print payLoadsAndUsers
         return (RankingModel.LATEST_MESSAGES, sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True)[:noOfMessages])
     @staticmethod
     def latestMessagesDuplicatesRemoved(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
@@ -113,8 +117,6 @@ class RankingModel:
             messageIdToMessage[m.id] = m
             payLoadsToMessageMap[m.payLoad.id].append(m)
         rankedPayLoads = sorted([(id, len(list(occurences))) for id, occurences in groupby(sorted(payLoads))], key=itemgetter(1), reverse=True)[:noOfMessages]
-#        print rankedPayLoads
-#        print 'x'
         return (RankingModel.POPULAR_MESSAGES, [getEarliestMessage(payLoadsToMessageMap[pid]) for pid,_ in rankedPayLoads])
 
 class Model(object):

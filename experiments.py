@@ -237,11 +237,11 @@ def performanceAsPercentageOfGlobalSpammerVaries(generateData):
         plt.savefig('performanceAsPercentageOfGlobalSpammerVaries.png')
 
 #trendCurves()
-#performanceAsPercentageOfSpammersVaries(generateData=False)
+performanceAsPercentageOfSpammersVaries(generateData=True)
 #performanceAsSpammerBudgetVaries(generateData=False)
 #performanceAsSpammerPayloadVaries(generateData=False)
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
-performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
+#performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
