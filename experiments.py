@@ -232,16 +232,16 @@ def performanceAsPercentageOfGlobalSpammerVaries(generateData):
         plt.xlabel('Percentage of spammers using global stratergy')
         plt.ylabel('Spammness')
         plt.title('Spammness when spammers use mixed strategy')
-        plt.legend(loc=2)
+        plt.legend(loc=4)
 #        plt.show()
         plt.savefig('performanceAsPercentageOfGlobalSpammerVaries.png')
 
 #trendCurves()
 #performanceAsPercentageOfSpammersVaries(generateData=False)
 #performanceAsSpammerBudgetVaries(generateData=False)
-#performanceAsSpammerPayloadVaries(generateData=True)
-#performanceAsNoOfGlobalPayloadsVary(generateData=True)
-performanceAsPercentageOfGlobalSpammerVaries(generateData=True)
+#performanceAsSpammerPayloadVaries(generateData=False)
+#performanceAsNoOfGlobalPayloadsVary(generateData=False)
+performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
