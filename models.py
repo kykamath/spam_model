@@ -80,7 +80,7 @@ class Analysis:
                 iterationData = {'currentTimeStep': currentTimeStep, 'spammmess': defaultdict(list)}
                 for rankingMethod in rankingMethods: 
                     for queryTopic,_ in topTopics:
-                        ranking_id, messages = rankingMethod(queryTopic, model.topicToMessagesMap)
+                        ranking_id, messages = rankingMethod(queryTopic, model.topicToMessagesMap, **conf)
 #                        if spammness(messages, norm_k)==0:
 #                            print 'c'
 #                        print rankingMethod, spammness(messages, norm_k)
@@ -88,28 +88,46 @@ class Analysis:
 #                        print ranking_id, spammness(messages, norm_k)
                 FileIO.writeToFileAsJson(iterationData, experimentFileName)
                 model.topicsDistributionInTheTimeSet = defaultdict(int)
+                
+class SpamDetectionModel:
+    FILTER_SCORE_THRESHOLD = 0.25
+    FILTER_METHOD = 'filter_method'
+    @staticmethod
+    def filterMethod(queryTopic, topicToMessagesMap):
+        payLoadsAndUsers = sorted([(m.payLoad.id, m.id.split('_')[0]) for m in topicToMessagesMap[queryTopic]], key=itemgetter(0))
+        payLoadsAndUsers = [(k, list(l)) for k,l in groupby(payLoadsAndUsers, key=itemgetter(0))]
+        payLoadId_UserCount_MessageCount = [(id, len(set(t[1] for t in l))/float(len(l))  )for id, l in payLoadsAndUsers]
+        spamPayloads = [t[0] for t in payLoadId_UserCount_MessageCount if t[1]<=SpamDetectionModel.FILTER_SCORE_THRESHOLD]
+#        if spamPayloads:
+#            print 'c'
+        return spamPayloads
 
 class RankingModel:
     LATEST_MESSAGES = 'latest_messages'
     LATEST_MESSAGES_DUPLICATES_REMOVED = 'latest_messages_dup_removed'
     POPULAR_MESSAGES = 'popular_messages'
-    marker = {LATEST_MESSAGES: 'o', POPULAR_MESSAGES: 's', LATEST_MESSAGES_DUPLICATES_REMOVED: '^'}
+    LATEST_MESSAGES_SPAM_FILTERED = 'latest_messages_spam_filtered'
+    POPULAR_MESSAGES_SPAM_FILTERED = 'popular_messages_spam_filtered'
+    marker = {LATEST_MESSAGES: 'o', POPULAR_MESSAGES: 's', LATEST_MESSAGES_DUPLICATES_REMOVED: '^', 
+              LATEST_MESSAGES_SPAM_FILTERED: 's', POPULAR_MESSAGES_SPAM_FILTERED: 's'}
     @staticmethod
-    def latestMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
-        payLoadsAndUsers = sorted([(m.payLoad.id, m.id.split('_')[0]) for m in topicToMessagesMap[queryTopic]], key=itemgetter(0))
-        payLoadsAndUsers = [(k, list(l)) for k,l in groupby(payLoadsAndUsers, key=itemgetter(0))]
-        payLoadsAndUsers = [(id, len(set(t[1] for t in l)), len(l) )for id, l in payLoadsAndUsers]
-        print payLoadsAndUsers
-        return (RankingModel.LATEST_MESSAGES, sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True)[:noOfMessages])
+    def latestMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness, **conf): return (RankingModel.LATEST_MESSAGES, sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True)[:noOfMessages])
     @staticmethod
-    def latestMessagesDuplicatesRemoved(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
+    def latestMessagesSpamFiltered(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness, **conf): 
+#        spamDectectionMethod = conf.get('spamDectectionMethod', None)
+        spamPayloads = SpamDetectionModel.filterMethod(queryTopic, topicToMessagesMap)
+        sortedMessages = sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True)
+        messagesAfterSpamRemoved = filter(lambda m: m.payLoad.id not in spamPayloads, sortedMessages)
+        return (RankingModel.LATEST_MESSAGES_SPAM_FILTERED, messagesAfterSpamRemoved[:noOfMessages])
+    @staticmethod
+    def latestMessagesDuplicatesRemoved(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness, **conf): 
         messagesToReturn, observedPayload = [], set()
         for message in sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True):
             if message.payLoad.id not in observedPayload: messagesToReturn.append(message); observedPayload.add(message.payLoad.id)
             if len(messagesToReturn)==noOfMessages: break
         return (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, messagesToReturn)
     @staticmethod
-    def popularMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness): 
+    def popularMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness, **conf): 
         def getEarliestMessage(messages): return sorted(messages, key=lambda m: m.timeStep, reverse=True)[0]
         payLoads, messageIdToMessage, payLoadsToMessageMap = [], {},defaultdict(list)
         for m in topicToMessagesMap[queryTopic]:
@@ -118,6 +136,17 @@ class RankingModel:
             payLoadsToMessageMap[m.payLoad.id].append(m)
         rankedPayLoads = sorted([(id, len(list(occurences))) for id, occurences in groupby(sorted(payLoads))], key=itemgetter(1), reverse=True)[:noOfMessages]
         return (RankingModel.POPULAR_MESSAGES, [getEarliestMessage(payLoadsToMessageMap[pid]) for pid,_ in rankedPayLoads])
+    @staticmethod
+    def popularMessagesSpamFiltered(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness, **conf):
+        spamPayloads = SpamDetectionModel.filterMethod(queryTopic, topicToMessagesMap)
+        def getEarliestMessage(messages): return sorted(messages, key=lambda m: m.timeStep, reverse=True)[0]
+        payLoads, messageIdToMessage, payLoadsToMessageMap = [], {},defaultdict(list)
+        for m in topicToMessagesMap[queryTopic]:
+            payLoads.append(m.payLoad.id)
+            messageIdToMessage[m.id] = m
+            payLoadsToMessageMap[m.payLoad.id].append(m)
+        rankedPayLoads = sorted([(id, len(list(occurences))) for id, occurences in groupby(sorted(payLoads)) if id not in spamPayloads], key=itemgetter(1), reverse=True)[:noOfMessages]
+        return (RankingModel.POPULAR_MESSAGES_SPAM_FILTERED, [getEarliestMessage(payLoadsToMessageMap[pid]) for pid,_ in rankedPayLoads])
 
 class Model(object):
     def __init__(self, id=RANDOM_MODEL):
@@ -196,6 +225,7 @@ def run(model, numberOfTimeSteps=200, addUsersMethod=User.addNormalUsers, noOfUs
     currentTopics, currentUsers = [], []
     addUsersMethod(currentUsers, noOfUsers, **conf)
     random.shuffle(currentUsers)
+    conf['spamDectectionMethod'] = SpamDetectionModel.filterMethod
     analysis = []
     for method, frequency in analysisMethods: analysis.append(FixedIntervalMethod(method, frequency))
     
