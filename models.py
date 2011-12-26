@@ -96,7 +96,7 @@ class SpamDetectionModel:
     def filterMethod(queryTopic, topicToMessagesMap):
         payLoadsAndUsers = sorted([(m.payLoad.id, m.id.split('_')[0]) for m in topicToMessagesMap[queryTopic]], key=itemgetter(0))
         payLoadsAndUsers = [(k, list(l)) for k,l in groupby(payLoadsAndUsers, key=itemgetter(0))]
-        payLoadId_UserCount_MessageCount = [(id, len(set(t[1] for t in l))/float(len(l))  )for id, l in payLoadsAndUsers]
+        payLoadId_UserCount_MessageCount = [(id, len(set(t[1] for t in l))/float(len(l)), len(set(t[1] for t in l)), float(len(l))  )for id, l in payLoadsAndUsers]
         spamPayloads = [t[0] for t in payLoadId_UserCount_MessageCount if t[1]<=SpamDetectionModel.FILTER_SCORE_THRESHOLD]
 #        if spamPayloads:
 #            print 'c'
@@ -162,7 +162,7 @@ class Model(object):
             else: message=user.generateMessage(currentTimeStep, random.choice(currentTopics))
         return message
     def process(self, currentTimeStep, currentTopics, currentUsers, **conf):
-        if not currentTopics: Topic.addNewTopics(currentTopics, 300)
+        if not currentTopics: Topic.addNewTopics(currentTopics, conf.get('noOfTopics', 300))
         random.shuffle(currentUsers)
         for user in currentUsers:
             message = self.messageSelectionMethod(currentTimeStep, user, currentTopics, **conf)
@@ -198,7 +198,8 @@ class MixedUsersModel(Model):
                             topic = self.topTopics[topicIndex][0]
                             message=user.generateMessage(currentTimeStep, topic)
                 else: 
-                    if user.topicClass!=None: message=user.generateMessage(currentTimeStep, random.choice(self.topicProbabilities[user.topicClass])[0])
+                    if user.topicClass!=None: 
+                        message=user.generateMessage(currentTimeStep, random.choice(self.topicProbabilities[user.topicClass])[0])
                     else:
                         topicIndex = GeneralMethods.weightedChoice([i[1] for i in self.allTopics])
                         topic = self.allTopics[topicIndex][0]

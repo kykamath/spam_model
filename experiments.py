@@ -240,9 +240,8 @@ def performanceWithSpamFiltering(generateData):
     experimentData = defaultdict(dict)
     for iteration in range(10):
         for spammerPercentage in range(1,21):
+#            spammerPercentage = 20
             spammerPercentage = spammerPercentage*0.05
-#        for spammerPercentage in range(0,10):
-#            spammerPercentage = spammerPercentage*0.005
             experimentFileName = spamModelFolder+'performanceWithSpamFiltering/%s/%0.3f'%(iteration,spammerPercentage)
             print experimentFileName
             if generateData:
@@ -250,7 +249,7 @@ def performanceWithSpamFiltering(generateData):
                 conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatio, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 1-spammerPercentage, 'spammer': spammerPercentage},
                         'rankingMethods':[RankingModel.popularMessages, RankingModel.popularMessagesSpamFiltered],
                         'experimentFileName': experimentFileName,
-                        'noOfPayloadsPerSpammer': 1
+                        'noOfPayloadsPerSpammer': 1, 'noOfTopics': 10
                         }
                 GeneralMethods.runCommand('rm -rf %s'%experimentFileName);run(**conf)
             else:
@@ -286,7 +285,7 @@ def performanceWithSpamFiltering(generateData):
 #performanceAsSpammerPayloadVaries(generateData=False)
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
-performanceWithSpamFiltering(generateData=False)
+performanceWithSpamFiltering(generateData=True)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50

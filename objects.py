@@ -9,7 +9,8 @@ from library.classes import GeneralMethods
 from settings import stickinessLowerThreshold, noOfPayloadsPerTopic,\
     noOfPayloadsPerSpammer, noOfGlobalSpammerPayloads, globalSpammerId
 
-topicClasses = range(4)
+topicClasses = range(2)
+#topicClasses = range(1)
 
 class PayLoad(object):
     def __init__(self, id, generatorId):
@@ -113,7 +114,8 @@ class Spammer(User):
         if conf.get('noOfGlobalSpammerPayloads', False): 
             if not Spammer.globalPayloads: Spammer.globalPayloads = SpamPayLoad.generatePayloads(globalSpammerId, conf.get('noOfGlobalSpammerPayloads', noOfGlobalSpammerPayloads))
             self.payLoads = [random.choice(Spammer.globalPayloads)]
-        else: self.payLoads = SpamPayLoad.generatePayloads(id, conf.get('noOfPayloadsPerSpammer', noOfPayloadsPerSpammer))
+        else: 
+            self.payLoads = SpamPayLoad.generatePayloads(id, conf.get('noOfPayloadsPerSpammer', noOfPayloadsPerSpammer))
     def getPayLoad(self): return random.choice(self.payLoads)
     def generateMessage(self, timeStep, topic):
         self.messagesSent+=1
