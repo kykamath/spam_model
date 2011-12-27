@@ -90,7 +90,7 @@ class Analysis:
                 model.topicsDistributionInTheTimeSet = defaultdict(int)
                 
 class SpamDetectionModel:
-    FILTER_SCORE_THRESHOLD = 0.25
+    FILTER_SCORE_THRESHOLD = 0.75
     FILTER_METHOD = 'filter_method'
     @staticmethod
     def filterMethod(queryTopic, topicToMessagesMap):
