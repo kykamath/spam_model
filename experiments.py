@@ -353,8 +353,10 @@ def performanceWithSpamFilteringForPopularMessagesByTime(generateData):
             for k, v in experimentData[ranking_id].iteritems():
                 dataX.append(k), dataY.append(np.mean(v))
             plt.plot(dataX, dataY, label=labels[ranking_id])
+        plt.xlabel('Time'), plt.ylabel('Spamness')
         plt.legend()
-        plt.show()
+#        plt.show()
+        plt.savefig('performanceWithSpamFilteringForPopularMessagesByTime.png')
 #        realDataY = defaultdict(dict)
 #        for iteration in experimentData:
 #            dataY = defaultdict(list)
