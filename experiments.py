@@ -401,8 +401,8 @@ def performanceWithSpamFilteringForPopularMessagesByTime(generateData):
 #        plt.savefig('performanceWithSpamFilteringForPopularMessagesByTime.png')
 
 #trendCurves()
-performanceAsPercentageOfSpammersVaries(generateData=False)
-#performanceAsSpammerBudgetVaries(generateData=False)
+#performanceAsPercentageOfSpammersVaries(generateData=False)
+performanceAsSpammerBudgetVaries(generateData=False)
 #performanceAsSpammerPayloadVaries(generateData=False)
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
