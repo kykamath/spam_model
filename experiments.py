@@ -158,8 +158,8 @@ def performanceAsSpammerPayloadVaries(generateData):
         plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #        plt.title('Spammness with changing spammer payloads')
         plt.legend(prop=prop, loc='upper center', bbox_to_anchor=(0.5, 1.12), ncol=3, fancybox=True, shadow=False)
-        plt.show()
-#        plt.savefig('performanceAsSpammerPayloadVaries.png')
+#        plt.show()
+        plt.savefig('performanceAsSpammerPayloadVaries.png')
         plt.clf()
         
 def performanceAsNoOfGlobalPayloadsVary(generateData):
