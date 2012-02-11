@@ -406,8 +406,8 @@ def performanceWithSpamFilteringForPopularMessagesByTime(generateData):
 #performanceAsSpammerPayloadVaries(generateData=False)
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
-performanceWithSpamFilteringForLatestMessages(generateData=True)
-#performanceWithSpamFilteringForPopularMessages(generateData=False)
+#performanceWithSpamFilteringForLatestMessages(generateData=True)
+performanceWithSpamFilteringForPopularMessages(generateData=False)
 #performanceWithSpamFilteringForPopularMessagesByTime(generateData=True)
 
 #model = MixedUsersModel()
