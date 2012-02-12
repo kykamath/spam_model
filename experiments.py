@@ -385,8 +385,8 @@ def performanceWithSpamDetection(generateData):
             plt.legend()
             plt.xlabel('Time', fontsize=16, fontweight='bold')
             plt.ylabel('Spamness', fontsize=16, fontweight='bold')
-            plt.show()
-#            plt.savefig('performanceWithSpamDetection_%s.png'%ranking_id)
+#            plt.show()
+            plt.savefig('performanceWithSpamDetection_%s.png'%ranking_id)
             plt.clf()
         
 #def performanceWithSpamFilteringForPopularMessagesByTime(generateData):
