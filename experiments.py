@@ -346,7 +346,7 @@ def performanceWithSpamDetection(generateData):
     experimentData = defaultdict(dict)
     ratios = [0.0,0.4,0.9]
     marker = dict([(0.0, 's'), (0.4, 'o'), (0.9, 'd')])
-    spammerPercentages = [0.05, 0.01, 0.01]
+    spammerPercentages = [0.2, 0.01, 0.01]
     for iteration in range(5):
         for spamDetectionRatio, spammerPercentage in zip(ratios, spammerPercentages):
             experimentFileName = spamModelFolder+'performanceWithSpamDetection/%s/%0.3f'%(iteration,spamDetectionRatio)
@@ -455,7 +455,7 @@ def performanceWithSpamDetection(generateData):
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
 #performanceWithSpamFilteringForLatestMessages(generateData=False)
 #performanceWithSpamFilteringForPopularMessages(generateData=False)
-performanceWithSpamDetection(generateData=False)
+performanceWithSpamDetection(generateData=True)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
