@@ -94,6 +94,18 @@ class User(object):
         User.addNormalUsers(currentUsers, int(noOfUsersToAdd*ratio['normal']), **conf)
         if conf.get('spamRatio', False): User.addSpammersInRatio(currentUsers, int(noOfUsersToAdd*ratio['spammer']), **conf)
         else: User.addSpammers(currentUsers, int(noOfUsersToAdd*ratio['spammer']), **conf)
+    @staticmethod
+    def addUsersUsingRatioWithSpamDetection(currentUsers, noOfUsersToAdd, **conf):
+        ratio = conf['ratio']
+        if '%0.1f'%(ratio['normal']+ratio['spammer'])!='%0.1f'%1.0: raise Exception('Ratio Should sum to 1.0')
+        User.addNormalUsers(currentUsers, int(noOfUsersToAdd*ratio['normal']), **conf)
+        if conf.get('spamRatio', False): raise Exception('Doesnt support spam ratio')
+        else: 
+            spammers = []
+            User.addSpammers(spammers, int(noOfUsersToAdd*ratio['spammer']), **conf)
+            currentUsers+=filter(lambda u: random.random() >= conf['spamDetectionRatio'], spammers)
+            print len(currentUsers)
+            print 'x'
     
 class NormalUser(User):
     def __init__(self, id):
