@@ -22,9 +22,9 @@ matplotlib.rc('xtick', labelsize=16)
 matplotlib.rc('ytick', labelsize=16)
 prop = fm.FontProperties(size=14)
 
-labels = dict([(RankingModel.LATEST_MESSAGES, 'LMR'),
-               (RankingModel.POPULAR_MESSAGES, 'PMR'),
-               (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, 'LDMR'),
+labels = dict([(RankingModel.LATEST_MESSAGES, 'LDCR'),
+               (RankingModel.POPULAR_MESSAGES, 'PCR'),
+               (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, 'LCR'),
                (RankingModel.LATEST_MESSAGES_SPAM_FILTERED, 'LMR after Spam Filtering'),
                (RankingModel.POPULAR_MESSAGES_SPAM_FILTERED, 'PMR after Spam Filtering'),
                ])
@@ -114,7 +114,7 @@ def performanceAsSpammerBudgetVaries(generateData):
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
         for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
-        plt.xlabel('Spammer Messaging Probability', fontsize=16, fontweight='bold')
+        plt.xlabel('Spam Content Generation Probability', fontsize=16, fontweight='bold')
         plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #        plt.title('Spammness with changing messaging probability')
         plt.legend(loc=2)
@@ -154,7 +154,7 @@ def performanceAsSpammerPayloadVaries(generateData):
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
         for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
-        plt.xlabel('Spammer Payload', fontsize=16, fontweight='bold')
+        plt.xlabel('No. of Spam Payload', fontsize=16, fontweight='bold')
         plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #        plt.title('Spammness with changing spammer payloads')
         plt.legend(prop=prop, loc='upper center', bbox_to_anchor=(0.5, 1.12), ncol=3, fancybox=True, shadow=False)
@@ -200,7 +200,7 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
             dy = [np.mean(realDataY[ranking_id][x]) for x in dataX[:20]] + list(smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]])) #+smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]]
             plt.semilogx(dataX, dy[:len(dataX)], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
 #        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])  
-        plt.xlabel('No. of Global Payloads', fontsize=15, fontweight='bold')
+        plt.xlabel('Payloads Per Spam Group', fontsize=15, fontweight='bold')
         plt.ylabel('Spamness', fontsize=15, fontweight='bold')
 #        plt.title('Spammness with changing global payloads')
         plt.legend(loc=4)
@@ -246,7 +246,7 @@ def performanceAsPercentageOfGlobalSpammerVaries(generateData):
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
         for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
-        plt.xlabel('Percentage of Spammers Using Global Strategy', fontsize=16, fontweight='bold')
+        plt.xlabel('Percentage of Spammers Using Group Strategy', fontsize=16, fontweight='bold')
         plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #        plt.title('Spammness when spammers use mixed strategy')
         plt.legend(loc=4)
