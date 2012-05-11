@@ -15,6 +15,7 @@ from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 from library.plotting import smooth
+from operator import itemgetter
 
 import matplotlib
 import matplotlib.font_manager as fm
@@ -22,11 +23,11 @@ matplotlib.rc('xtick', labelsize=16)
 matplotlib.rc('ytick', labelsize=16)
 prop = fm.FontProperties(size=14)
 
-labels = dict([(RankingModel.LATEST_MESSAGES, 'LDCR'),
+labels = dict([(RankingModel.LATEST_MESSAGES, 'LCR'),
                (RankingModel.POPULAR_MESSAGES, 'PCR'),
-               (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, 'LCR'),
-               (RankingModel.LATEST_MESSAGES_SPAM_FILTERED, 'LMR after Spam Filtering'),
-               (RankingModel.POPULAR_MESSAGES_SPAM_FILTERED, 'PMR after Spam Filtering'),
+               (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, 'LCDR'),
+               (RankingModel.LATEST_MESSAGES_SPAM_FILTERED, 'LCR after Spam Filtering'),
+               (RankingModel.POPULAR_MESSAGES_SPAM_FILTERED, 'PCR after Spam Filtering'),
                ])
 
 def trendCurves():
@@ -36,12 +37,59 @@ def trendCurves():
             'experimentFileName': experimentFileName}
     GeneralMethods.runCommand('rm -rf %s'%experimentFileName); run(**conf)
     Analysis.trendCurves(experimentFileName=experimentFileName)
+
+def topic_distribution():
+    model = MixedUsersModel()
+    ax = plt.subplot(111)
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    experimentFileName = spamModelFolder+model.id
+    data = [d for d in FileIO.iterateJsonFromFile(experimentFileName)][-2]
+    topic_sizes = [t['total'] for t in data['topics'].values()]
+    topic_sizes = [t for t in topic_sizes if t>10]
+    accurracy = 1
+    mf_topic_size_to_count = defaultdict(float)
+    for size in topic_sizes:
+#        if size>0:
+#            size-=12
+        print size
+        mf_topic_size_to_count[int(size/accurracy)*accurracy+accurracy]+=1
+    x_count, y_size = zip(*sorted(mf_topic_size_to_count.iteritems(), key=itemgetter(0)))
+    total_y = sum(y_size)
+    y_size = [y/total_y for y in y_size]
+    plt.scatter(x_count, y_size)
+    plt.xlabel('Number of Contents in a Topic', fontsize=16, fontweight='bold')
+    plt.ylabel('Frequency', fontsize=16, fontweight='bold')
+    plt.savefig('topic_distribution.png')
+#    plt.loglog(x_count[10], y_size[10])
+#    plt.xlim(xmin=0)
+#    plt.hist(counts,50)
+#    plt.show()
+#    print 'x'
+#    topicsDataX = defaultdict(list)
+#    topicsDataY = defaultdict(list)
+#    for data in FileIO.iterateJsonFromFile(experimentFileName):
+##        if 'conf' not in data:
+#        if 'conf' in data:
+#            for topic in data['topics']: topicsDataX[topic].append(data['t']), topicsDataY[topic].append(data['topics'][topic]['timeStep'])
+#        else: 
+#            topicColorMap=data['topic_colors']; trendingTopics=data['trending_topics']
+#    for topic in topicsDataX: plt.fill_between(topicsDataX[topic], topicsDataY[topic], color=topicColorMap[str(topic)], alpha=1.0)
+#    plt.figure()
+#    for topic in trendingTopics: plt.fill_between(topicsDataX[str(topic)], topicsDataY[str(topic)], color=topicColorMap[str(topic)], alpha=1.0)
+#    plt.ylabel('Number of Contents', fontsize=16, fontweight='bold')
+#    plt.show()
     
 def performanceAsPercentageOfSpammersVaries(generateData):
     experimentData = defaultdict(dict)
     for iteration in range(10):
-        for spammerPercentage in range(1,21):
-            spammerPercentage = spammerPercentage*0.05
+#        for spammerPercentage in range(1,21):
+#            spammerPercentage = spammerPercentage*0.05
+        l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
+        l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
+        l3 = [0.01]+l2
+        for spammerPercentage in l3:
+#            spammerPercentage = spammerPercentage* 0.001
 #        for spammerPercentage in range(0,10):
 #            spammerPercentage = spammerPercentage*0.005
             experimentFileName = spamModelFolder+'performanceAsPercentageOfSpammersVaries/%s/%0.3f'%(iteration,spammerPercentage)
@@ -78,7 +126,7 @@ def performanceAsPercentageOfSpammersVaries(generateData):
         plt.legend(loc=2, prop=prop)
 #        plt.show()
         plt.savefig('performanceAsPercentageOfSpammersVaries.png')
-        plt.clf()
+#        plt.clf()
         
 def performanceAsSpammerBudgetVaries(generateData):
     experimentData = defaultdict(dict)
@@ -257,9 +305,17 @@ def performanceAsPercentageOfGlobalSpammerVaries(generateData):
 def performanceWithSpamFilteringForPopularMessages(generateData):
     experimentData = defaultdict(dict)
     for iteration in range(3):
-        for spammerPercentage in range(1,21):
-#            spammerPercentage = 20
-            spammerPercentage = spammerPercentage*0.05
+#        for spammerPercentage in range(1,21):
+##            spammerPercentage = 20
+#            spammerPercentage = spammerPercentage*0.05
+#        for spammerPercentage in range(1,11):
+#            spammerPercentage = spammerPercentage*0.02
+#        for spammerPercentage in range(1,201):
+#            spammerPercentage = spammerPercentage* 0.005
+        l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
+        l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
+        l3 = [0.01]+l2
+        for spammerPercentage in l3:
             experimentFileName = spamModelFolder+'performanceWithSpamFilteringForPopularMessages/%s/%0.3f'%(iteration,spammerPercentage)
             print experimentFileName
             if generateData:
@@ -293,6 +349,7 @@ def performanceWithSpamFilteringForPopularMessages(generateData):
         plt.xlabel('Percentage of Spammers', fontsize=16, fontweight='bold')
         plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #        plt.title('Performance with spam filtering')
+        plt.ylim(ymin=-0.002)
         plt.legend(loc=2)
 #        plt.show()
         plt.savefig('performanceWithSpamFilteringForPopularMessages.png')
@@ -301,9 +358,17 @@ def performanceWithSpamFilteringForPopularMessages(generateData):
 def performanceWithSpamFilteringForLatestMessages(generateData):
     experimentData = defaultdict(dict)
     for iteration in range(3):
-        for spammerPercentage in range(1,21):
-#            spammerPercentage = 20
-            spammerPercentage = spammerPercentage*0.05
+#        for spammerPercentage in range(1,21):
+##            spammerPercentage = 20
+#            spammerPercentage = spammerPercentage*0.05
+#        for spammerPercentage in range(1,11):
+#            spammerPercentage = spammerPercentage*0.02
+#        for spammerPercentage in range(1,201):
+#            spammerPercentage = spammerPercentage* 0.005
+        l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
+        l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
+        l3 = [0.01]+l2
+        for spammerPercentage in l3:
             experimentFileName = spamModelFolder+'performanceWithSpamFilteringForLatestMessages/%s/%0.3f'%(iteration,spammerPercentage)
             print experimentFileName
             if generateData:
@@ -447,7 +512,8 @@ def performanceWithSpamDetection(generateData):
 ###        plt.show()
 ##        plt.savefig('performanceWithSpamFilteringForPopularMessagesByTime.png')
 
-#trendCurves()
+trendCurves()
+#topic_distribution()
 #performanceAsPercentageOfSpammersVaries(generateData=False)
 #performanceAsSpammerBudgetVaries(generateData=False)
 #performanceAsSpammerPayloadVaries(generateData=False)
@@ -455,7 +521,7 @@ def performanceWithSpamDetection(generateData):
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
 #performanceWithSpamFilteringForLatestMessages(generateData=False)
 #performanceWithSpamFilteringForPopularMessages(generateData=False)
-performanceWithSpamDetection(generateData=False)
+#performanceWithSpamDetection(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50

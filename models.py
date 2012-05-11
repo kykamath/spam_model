@@ -7,7 +7,7 @@ Created on Oct 17, 2011
 '''
 from library.classes import FixedIntervalMethod
 from library.classes import GeneralMethods
-from objects import Topic, User
+from objects import Topic, User, Spammer
 import random, math
 from library.file_io import FileIO
 from settings import stickinessLowerThreshold, noOfMessagesToCalculateSpammness
@@ -43,6 +43,7 @@ class Analysis:
                 iterationInfo  = {'trending_topics': [topic.id for topic in currentTopics if topic.stickiness>=stickinessLowerThreshold],
                       'topic_colors': dict((str(topic.id), topic.color) for topic in currentTopics),
                       'conf': conf}
+                del iterationInfo['conf']['spamDectectionMethod']
                 FileIO.writeToFileAsJson(iterationInfo, experimentFileName)
         else:
             topicsDataX = defaultdict(list)
@@ -54,6 +55,7 @@ class Analysis:
             for topic in topicsDataX: plt.fill_between(topicsDataX[topic], topicsDataY[topic], color=topicColorMap[str(topic)], alpha=1.0)
             plt.figure()
             for topic in trendingTopics: plt.fill_between(topicsDataX[str(topic)], topicsDataY[str(topic)], color=topicColorMap[str(topic)], alpha=1.0)
+            print User.total_messages, Spammer.total_messages
             plt.show()
     @staticmethod
     def measureRankingQuality(iterationData=None, experimentFileName=None):

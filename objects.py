@@ -26,7 +26,12 @@ class SpamPayLoad(PayLoad):
         self.isSpam = True
     @staticmethod
     def generatePayloads(generatorId, noOfPayLoadsToGenerate): return [SpamPayLoad(id, generatorId) for id in range(noOfPayLoadsToGenerate)]
-    
+
+def get_probability():
+    val = random.paretovariate(2)
+    val=val/10
+    if val>1: return 1.0
+    else: return val
 class Topic(object):
     def __init__(self, id):
         self.id = id
@@ -35,8 +40,9 @@ class Topic(object):
         self.age = 0
         self.topicClass = random.choice(topicClasses)
         self.decayCoefficient = -3
-        if GeneralMethods.trueWith(0.05): self.stickiness = random.uniform(stickinessLowerThreshold, 1.0)
-        else: self.stickiness = random.uniform(0.0, 0.1)
+#        if GeneralMethods.trueWith(0.05): self.stickiness = random.uniform(stickinessLowerThreshold, 1.0)
+#        else: self.stickiness = random.uniform(0.0, 0.1)
+        self.stickiness = get_probability()
         self.payloads = PayLoad.generatePayloads(self.id, noOfPayloadsPerTopic)
         #Non-modeling attributes.
         self.color = GeneralMethods.getRandomColor()
@@ -59,6 +65,7 @@ class Message:
         self.topic = topic
         
 class User(object):
+    total_messages = 0.0
     def __init__(self, id):
         self.id = id
         self.messagingProbability = 0.1
@@ -67,6 +74,7 @@ class User(object):
     def __str__(self): return ' '.join([str(self.id)])
     def generateMessage(self, timeStep, topic):
         self.messagesSent+=1
+        User.total_messages+=1
         return Message(str(self.id)+'_'+str(self.messagesSent), timeStep, topic.getPayLoad(), topic)
     @staticmethod
     def addNormalUsers(currentUsers, noOfUsersToAdd, **conf):
@@ -116,6 +124,7 @@ class NormalUser(User):
 
 class Spammer(User):
     globalPayloads = None
+    total_messages = 0.0
     def __init__(self, id, **conf):
         super(Spammer, self).__init__(id)
         self.topicClass = None
@@ -131,6 +140,7 @@ class Spammer(User):
     def getPayLoad(self): return random.choice(self.payLoads)
     def generateMessage(self, timeStep, topic):
         self.messagesSent+=1
+        Spammer.total_messages+=1
         return Message(str(self.id)+'_'+str(self.messagesSent), timeStep, self.getPayLoad(), topic)
     
 if __name__ == '__main__':
