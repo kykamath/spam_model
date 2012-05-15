@@ -315,7 +315,7 @@ def performanceWithSpamFilteringForPopularMessages(generateData):
         l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
         l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
         l3 = [0.01]+l2
-        for spammerPercentage in l1+l2:
+        for spammerPercentage in l1:
             experimentFileName = spamModelFolder+'performanceWithSpamFilteringForPopularMessages/%s/%0.3f'%(iteration,spammerPercentage)
             print experimentFileName
             if generateData:
@@ -351,8 +351,8 @@ def performanceWithSpamFilteringForPopularMessages(generateData):
 #        plt.title('Performance with spam filtering')
         plt.ylim(ymin=-0.002)
         plt.legend(loc=2)
-        plt.show()
-#        plt.savefig('performanceWithSpamFilteringForPopularMessages.png')
+#        plt.show()
+        plt.savefig('performanceWithSpamFilteringForPopularMessages.png')
         plt.clf()
         
 def performanceWithSpamFilteringForLatestMessages(generateData):
@@ -525,8 +525,8 @@ def performanceWithSpamDetection(generateData):
 #performanceAsSpammerPayloadVaries(generateData=False)
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
-performanceWithSpamFilteringForLatestMessages(generateData=False)
-#performanceWithSpamFilteringForPopularMessages(generateData=False)
+#performanceWithSpamFilteringForLatestMessages(generateData=False)
+performanceWithSpamFilteringForPopularMessages(generateData=False)
 #performanceWithSpamDetection(generateData=False)
 
 #model = MixedUsersModel()
