@@ -418,7 +418,7 @@ def performanceWithSpamDetection(generateData):
     marker = dict([(0.0, 's'), (0.4, 'o'), (0.9, 'd')])
 #    spammerPercentages = [0.2, 0.01, 0.01]
     spammerPercentages = [0.015, 0.015, 0.015]
-    for iteration in range(5):
+    for iteration in range(10):
         for spamDetectionRatio, spammerPercentage in zip(ratios, spammerPercentages):
             experimentFileName = spamModelFolder+'performanceWithSpamDetection/%s/%0.3f'%(iteration,spamDetectionRatio)
             print experimentFileName
@@ -448,7 +448,7 @@ def performanceWithSpamDetection(generateData):
                 print ranking_id, spamDetectionRatio
                 dataY = smooth(sdr[spamDetectionRatio][ranking_id],8)[:len(sdr[spamDetectionRatio]['x'])]
                 dataX, dataY = sdr[spamDetectionRatio]['x'][10:], dataY[10:]
-                if spamDetectionRatio==0.0: plt.plot([x-10 for x in dataX], dataY, label='%s'%(labels[ranking_id].split()[0]), lw=1, marker=marker[spamDetectionRatio])
+                if spamDetectionRatio==0.0: plt.plot([x-10 for x in dataX], dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
                 else: plt.plot([x-10 for x in dataX], dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
             plt.ylim(ymin=0, ymax=1)
             plt.xlim(xmin=0, xmax=75)
@@ -526,8 +526,8 @@ def performanceWithSpamDetection(generateData):
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
 #performanceWithSpamFilteringForLatestMessages(generateData=False)
-performanceWithSpamFilteringForPopularMessages(generateData=False)
-#performanceWithSpamDetection(generateData=False)
+#performanceWithSpamFilteringForPopularMessages(generateData=False)
+performanceWithSpamDetection(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
