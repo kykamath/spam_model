@@ -408,8 +408,8 @@ def performanceWithSpamFilteringForLatestMessages(generateData):
         plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #        plt.title('Performance with spam filtering')
         plt.legend(loc=2)
-        plt.show()
-#        plt.savefig('performanceWithSpamFilteringForLatestMessages.png')
+#        plt.show()
+        plt.savefig('performanceWithSpamFilteringForLatestMessages.png')
         plt.clf()
         
 def performanceWithSpamDetection(generateData):
@@ -525,7 +525,7 @@ def performanceWithSpamDetection(generateData):
 #performanceAsSpammerPayloadVaries(generateData=False)
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
-performanceWithSpamFilteringForLatestMessages(generateData=True)
+performanceWithSpamFilteringForLatestMessages(generateData=False)
 #performanceWithSpamFilteringForPopularMessages(generateData=True)
 #performanceWithSpamDetection(generateData=False)
 
