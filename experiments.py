@@ -368,7 +368,7 @@ def performanceWithSpamFilteringForLatestMessages(generateData):
         l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
         l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
         l3 = [0.01]+l2
-        for spammerPercentage in l1:
+        for spammerPercentage in l3:
             experimentFileName = spamModelFolder+'performanceWithSpamFilteringForLatestMessages/%s/%0.3f'%(iteration,spammerPercentage)
             print experimentFileName
             if generateData:
