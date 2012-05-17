@@ -111,7 +111,7 @@ class RankingModel:
     LATEST_MESSAGES_SPAM_FILTERED = 'latest_messages_spam_filtered'
     POPULAR_MESSAGES_SPAM_FILTERED = 'popular_messages_spam_filtered'
     marker = {LATEST_MESSAGES: 'o', POPULAR_MESSAGES: 's', LATEST_MESSAGES_DUPLICATES_REMOVED: '^', 
-              LATEST_MESSAGES_SPAM_FILTERED: 's', POPULAR_MESSAGES_SPAM_FILTERED: 's'}
+              LATEST_MESSAGES_SPAM_FILTERED: 's', POPULAR_MESSAGES_SPAM_FILTERED: 'o'}
     @staticmethod
     def latestMessages(queryTopic, topicToMessagesMap, noOfMessages=noOfMessagesToCalculateSpammness, **conf): return (RankingModel.LATEST_MESSAGES, sorted(topicToMessagesMap[queryTopic], key=lambda m: m.timeStep, reverse=True)[:noOfMessages])
     @staticmethod

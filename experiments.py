@@ -23,12 +23,20 @@ matplotlib.rc('xtick', labelsize=16)
 matplotlib.rc('ytick', labelsize=16)
 prop = fm.FontProperties(size=14)
 
-labels = dict([(RankingModel.LATEST_MESSAGES, 'LCR'),
-               (RankingModel.POPULAR_MESSAGES, 'PCR'),
-               (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, 'LCDR'),
-               (RankingModel.LATEST_MESSAGES_SPAM_FILTERED, 'LCR after Spam Filtering'),
-               (RankingModel.POPULAR_MESSAGES_SPAM_FILTERED, 'PCR after Spam Filtering'),
+#labels = dict([(RankingModel.LATEST_MESSAGES, 'LCR'),
+#               (RankingModel.POPULAR_MESSAGES, 'PCR'),
+#               (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, 'LCDR'),
+#               (RankingModel.LATEST_MESSAGES_SPAM_FILTERED, 'LCR after Spam Filtering'),
+#               (RankingModel.POPULAR_MESSAGES_SPAM_FILTERED, 'PCR after Spam Filtering'),
+#               ])
+
+labels = dict([(RankingModel.LATEST_MESSAGES, 'Recency'),
+               (RankingModel.POPULAR_MESSAGES, 'Relevance'),
+#               (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, 'LCDR'),
+               (RankingModel.LATEST_MESSAGES_SPAM_FILTERED, 'Recency after Spam Filtering'),
+               (RankingModel.POPULAR_MESSAGES_SPAM_FILTERED, 'Relevance after Spam Filtering'),
                ])
+
 
 def trendCurves():
     model = MixedUsersModel()
@@ -88,7 +96,7 @@ def performanceAsPercentageOfSpammersVaries(generateData):
         l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
         l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
         l3 = [0.01]+l2
-        for spammerPercentage in l3:
+        for spammerPercentage in l1:
 #            spammerPercentage = spammerPercentage* 0.001
 #        for spammerPercentage in range(0,10):
 #            spammerPercentage = spammerPercentage*0.005
@@ -119,12 +127,15 @@ def performanceAsPercentageOfSpammersVaries(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
+        for ranking_id in dataY: 
+            if ranking_id in labels:
+                plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
         plt.xlabel('Percentage of Spammers', fontsize=16, fontweight='bold')
         plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #        plt.title('Spammness with changing percentage of spammers')
         plt.legend(loc=2, prop=prop)
 #        plt.show()
+        plt.xlim(xmax=0.05)
         plt.savefig('performanceAsPercentageOfSpammersVaries.png')
 #        plt.clf()
         
@@ -161,7 +172,9 @@ def performanceAsSpammerBudgetVaries(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
+        for ranking_id in dataY: 
+            if ranking_id in labels:
+                plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
         plt.xlabel('Spam Content Generation Probability', fontsize=16, fontweight='bold')
         plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #        plt.title('Spammness with changing messaging probability')
@@ -201,7 +214,9 @@ def performanceAsSpammerPayloadVaries(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
+        for ranking_id in dataY: 
+            if ranking_id in labels:
+                plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
         plt.xlabel('No. of Spam Payload', fontsize=16, fontweight='bold')
         plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #        plt.title('Spammness with changing spammer payloads')
@@ -244,9 +259,10 @@ def performanceAsNoOfGlobalPayloadsVary(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-        for ranking_id in dataY: 
-            dy = [np.mean(realDataY[ranking_id][x]) for x in dataX[:20]] + list(smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]])) #+smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]]
-            plt.semilogx(dataX, dy[:len(dataX)], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
+        for ranking_id in dataY:
+            if ranking_id in labels: 
+                dy = [np.mean(realDataY[ranking_id][x]) for x in dataX[:20]] + list(smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]])) #+smooth([np.mean(realDataY[ranking_id][x]) for x in dataX[20:]]
+                plt.semilogx(dataX, dy[:len(dataX)], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
 #        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])  
         plt.xlabel('Payloads Per Spam Group', fontsize=15, fontweight='bold')
         plt.ylabel('Spamness', fontsize=15, fontweight='bold')
@@ -293,7 +309,9 @@ def performanceAsPercentageOfGlobalSpammerVaries(generateData):
                 for x, y in zip(dataX, dataY[ranking_id]): 
                     if x not in realDataY[ranking_id]: realDataY[ranking_id][x]=[] 
                     realDataY[ranking_id][x].append(y)
-        for ranking_id in dataY: plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
+        for ranking_id in dataY: 
+            if ranking_id in labels:
+                plt.plot(dataX, [np.mean(realDataY[ranking_id][x]) for x in dataX], label=labels[ranking_id], lw=1, marker=RankingModel.marker[ranking_id])
         plt.xlabel('Percentage of Spammers Using Group Strategy', fontsize=16, fontweight='bold')
         plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #        plt.title('Spammness when spammers use mixed strategy')
@@ -352,6 +370,7 @@ def performanceWithSpamFilteringForPopularMessages(generateData):
         plt.ylim(ymin=-0.002)
         plt.legend(loc=2)
 #        plt.show()
+#        plt.xlim(xmax=0.05)
         plt.savefig('performanceWithSpamFilteringForPopularMessages.png')
         plt.clf()
         
@@ -368,7 +387,7 @@ def performanceWithSpamFilteringForLatestMessages(generateData):
         l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
         l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
         l3 = [0.01]+l2
-        for spammerPercentage in l3:
+        for spammerPercentage in l1:
             experimentFileName = spamModelFolder+'performanceWithSpamFilteringForLatestMessages/%s/%0.3f'%(iteration,spammerPercentage)
             print experimentFileName
             if generateData:
@@ -409,6 +428,7 @@ def performanceWithSpamFilteringForLatestMessages(generateData):
 #        plt.title('Performance with spam filtering')
         plt.legend(loc=2)
 #        plt.show()
+        plt.xlim(xmax=0.05)
         plt.savefig('performanceWithSpamFilteringForLatestMessages.png')
         plt.clf()
         
@@ -526,8 +546,8 @@ def performanceWithSpamDetection(generateData):
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
 #performanceWithSpamFilteringForLatestMessages(generateData=False)
-#performanceWithSpamFilteringForPopularMessages(generateData=False)
-performanceWithSpamDetection(generateData=False)
+performanceWithSpamFilteringForPopularMessages(generateData=False)
+#performanceWithSpamDetection(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
