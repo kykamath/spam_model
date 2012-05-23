@@ -463,7 +463,8 @@ def performanceWithSpamDetection(generateData):
                 dataToPlot['x'].append(timeUnit)
                 for ranking_id in experimentData[spamDetectionRatio][timeUnit]: dataToPlot[ranking_id].append(np.mean(experimentData[spamDetectionRatio][timeUnit][ranking_id]))
             sdr[spamDetectionRatio]=dataToPlot
-        for ranking_id in [RankingModel.LATEST_MESSAGES_SPAM_FILTERED, RankingModel.POPULAR_MESSAGES_SPAM_FILTERED]:
+#        for ranking_id in [RankingModel.LATEST_MESSAGES_SPAM_FILTERED, RankingModel.POPULAR_MESSAGES_SPAM_FILTERED]:
+        for ranking_id in [RankingModel.LATEST_MESSAGES, RankingModel.POPULAR_MESSAGES]:
             for spamDetectionRatio in ratios:
                 print ranking_id, spamDetectionRatio
                 dataY = smooth(sdr[spamDetectionRatio][ranking_id],8)[:len(sdr[spamDetectionRatio]['x'])]
@@ -546,8 +547,8 @@ def performanceWithSpamDetection(generateData):
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
 #performanceWithSpamFilteringForLatestMessages(generateData=False)
-performanceWithSpamFilteringForPopularMessages(generateData=False)
-#performanceWithSpamDetection(generateData=False)
+#performanceWithSpamFilteringForPopularMessages(generateData=False)
+performanceWithSpamDetection(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
