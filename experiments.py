@@ -554,6 +554,7 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
                 else: plt.plot(dataX, dataY, label='%s after spam detection (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
 #            plt.show()
             plt.xlim(xmax=0.05)
+            plt.ylim(0.8)
             plt.legend(loc=2)
             plt.xlabel('Time', fontsize=16, fontweight='bold')
             plt.ylabel('Spamness', fontsize=16, fontweight='bold')
