@@ -499,7 +499,7 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
         l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
         l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
         l3 = [0.01]+l2
-        spammer_percentages = l1+l2
+        spammer_percentages = l1
         for spammerPercentage in spammer_percentages:
             for spamDetectionRatio, spammerPercentage in zip(ratios, [spammerPercentage]*3):
                 experimentFileName = spamModelFolder+'performanceWithSpamDetectionVaryingPercentageOfSpammers/%s/%0.3f/%0.3f'%(iteration,spammerPercentage, spamDetectionRatio)
@@ -627,7 +627,7 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
 #performanceWithSpamFilteringForLatestMessages(generateData=False)
 #performanceWithSpamFilteringForPopularMessages(generateData=False)
 #performanceWithSpamDetection(generateData=False)
-performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData=True)
+performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
