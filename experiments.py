@@ -14,7 +14,7 @@ from library.file_io import FileIO
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
-from library.plotting import smooth, savefig
+from library.plotting import smooth, savefig, splineSmooth
 from operator import itemgetter
 
 import matplotlib
@@ -30,13 +30,19 @@ prop = fm.FontProperties(size=14)
 #               (RankingModel.POPULAR_MESSAGES_SPAM_FILTERED, 'PCR after Spam Filtering'),
 #               ])
 
-labels = dict([(RankingModel.LATEST_MESSAGES, 'Recency'),
-               (RankingModel.POPULAR_MESSAGES, 'Relevance'),
+#labels = dict([(RankingModel.LATEST_MESSAGES, 'Recency'),
+#               (RankingModel.POPULAR_MESSAGES, 'Relevance'),
+##               (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, 'LCDR'),
+#               (RankingModel.LATEST_MESSAGES_SPAM_FILTERED, 'Recency after Spam Filtering'),
+#               (RankingModel.POPULAR_MESSAGES_SPAM_FILTERED, 'Relevance after Spam Filtering'),
+#               ])
+
+labels = dict([(RankingModel.LATEST_MESSAGES, 'Relevance'),
+               (RankingModel.POPULAR_MESSAGES, 'Recency'),
 #               (RankingModel.LATEST_MESSAGES_DUPLICATES_REMOVED, 'LCDR'),
                (RankingModel.LATEST_MESSAGES_SPAM_FILTERED, 'Recency after Spam Filtering'),
                (RankingModel.POPULAR_MESSAGES_SPAM_FILTERED, 'Relevance after Spam Filtering'),
                ])
-
 
 def trendCurves():
     model = MixedUsersModel()
@@ -486,14 +492,14 @@ def performanceWithSpamDetection(generateData):
 def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
     experimentData = defaultdict(dict)
     ratios = [0.0,0.4,0.9]
-    marker = dict([(0.0, 's'), (0.6, 'o'), (0.9, 'd')])
+    marker = dict([(0.0, 's'), (0.4, 'o'), (0.9, 'd')])
 #    spammerPercentages = [0.2, 0.01, 0.01]
 #    spammerPercentages = [0.015, 0.015, 0.015]
-    for iteration in range(3):
+    for iteration in range(10):
         l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
         l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
         l3 = [0.01]+l2
-        spammer_percentages = l3
+        spammer_percentages = l1+l2
         for spammerPercentage in spammer_percentages:
             for spamDetectionRatio, spammerPercentage in zip(ratios, [spammerPercentage]*3):
                 experimentFileName = spamModelFolder+'performanceWithSpamDetectionVaryingPercentageOfSpammers/%s/%0.3f/%0.3f'%(iteration,spammerPercentage, spamDetectionRatio)
@@ -532,14 +538,17 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
         for ranking_id in [RankingModel.LATEST_MESSAGES, RankingModel.POPULAR_MESSAGES]:
             for spamDetectionRatio in ratios:
                 print ranking_id, spamDetectionRatio
-                dataY = smooth(sdr[spamDetectionRatio][ranking_id],8)[:len(sdr[spamDetectionRatio]['x'])]
-                dataX, dataY = sdr[spamDetectionRatio]['x'][10:], dataY[10:]
+#                dataY = smooth(sdr[spamDetectionRatio][ranking_id],8)[:len(sdr[spamDetectionRatio]['x'])]
+                dataY = sdr[spamDetectionRatio][ranking_id][:len(sdr[spamDetectionRatio]['x'])]
+#                dataX, dataY = sdr[spamDetectionRatio]['x'][10:], dataY[10:]
+                dataX, dataY = sdr[spamDetectionRatio]['x'], dataY
+#                dataX, dataY = splineSmooth(dataX, dataY)
 #                if spamDetectionRatio==0.0: plt.plot([x-10 for x in dataX], dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
 #                else: plt.plot([x-10 for x in dataX], dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
                 if spamDetectionRatio==0.0: plt.plot(dataX, dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
                 else: plt.plot(dataX, dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
 #            plt.show()
-            plt.xlim(xmax=1.0)
+            plt.xlim(xmax=0.05)
             plt.legend(loc=2)
             plt.xlabel('Time', fontsize=16, fontweight='bold')
             plt.ylabel('Spamness', fontsize=16, fontweight='bold')
