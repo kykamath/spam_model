@@ -475,8 +475,13 @@ def performanceWithSpamDetection(generateData):
                 print ranking_id, spamDetectionRatio
                 dataY = smooth(sdr[spamDetectionRatio][ranking_id],8)[:len(sdr[spamDetectionRatio]['x'])]
                 dataX, dataY = sdr[spamDetectionRatio]['x'][10:], dataY[10:]
-                if spamDetectionRatio==0.0: plt.plot([x-10 for x in dataX], dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
-                else: plt.plot([x-10 for x in dataX], dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
+                print 'x', [x-10 for x in dataX]
+                if spamDetectionRatio==0.0: 
+                    print ranking_id, dataY
+                    plt.plot([x-10 for x in dataX], dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
+                else: 
+                    print ranking_id, dataY
+                    plt.plot([x-10 for x in dataX], dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
             plt.ylim(ymin=0, ymax=1)
             plt.xlim(xmin=0, xmax=75)
 #            plt.title(ranking_id)
@@ -546,12 +551,8 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
 #                if spamDetectionRatio==0.0: plt.plot([x-10 for x in dataX], dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
 #                else: plt.plot([x-10 for x in dataX], dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
                 print 'x', dataX
-                if spamDetectionRatio==0.0: 
-                    print ranking_id, dataY
-                    plt.plot(dataX, dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
-                else: 
-                    print ranking_id, dataY
-                    plt.plot(dataX, dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
+                if spamDetectionRatio==0.0: plt.plot(dataX, dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
+                else: plt.plot(dataX, dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
 #            plt.show()
 #            plt.xlim(xmax=0.05)
             plt.legend(loc=2)
