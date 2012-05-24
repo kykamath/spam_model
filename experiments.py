@@ -555,7 +555,7 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
 #            plt.show()
 #            plt.xlim(xmax=0.05)
 #            plt.ylim(ymax=0.8)
-            plt.legend(loc=2)
+            plt.legend(loc=4)
             plt.xlabel('Time', fontsize=16, fontweight='bold')
             plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #            plt.show()
