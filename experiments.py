@@ -550,7 +550,6 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
 #                dataX, dataY = splineSmooth(dataX, dataY)
 #                if spamDetectionRatio==0.0: plt.plot([x-10 for x in dataX], dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
 #                else: plt.plot([x-10 for x in dataX], dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
-                print 'x', dataX
                 if spamDetectionRatio==0.0: plt.plot(dataX, dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
                 else: plt.plot(dataX, dataY, label='%s after spam detection (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
 #            plt.show()
@@ -560,7 +559,7 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
             plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #            plt.show()
 #            plt.savefig('performanceWithSpamDetectionVaryingPercentageOfSpammers_%s.png'%ranking_id)
-            savefig('~/Dropbox/temp/performanceWithSpamDetectionVaryingPercentageOfSpammers_%s.png'%ranking_id)
+            savefig('/Users/krishnakamath/Dropbox/temp/performanceWithSpamDetectionVaryingPercentageOfSpammers_%s.png'%ranking_id)
 #            plt.show()
             plt.clf()
 
