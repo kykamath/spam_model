@@ -499,7 +499,7 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
                 print experimentFileName
                 if generateData:
                     model = MixedUsersModel()
-                    conf = {'model': model, 'numberOfTimeSteps': 100, 'addUsersMethod': User.addUsersUsingRatioWithSpamDetection, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 1-spammerPercentage, 'spammer': spammerPercentage},
+                    conf = {'model': model, 'numberOfTimeSteps': 10, 'addUsersMethod': User.addUsersUsingRatioWithSpamDetection, 'analysisMethods': [(Analysis.measureRankingQuality, 1)], 'ratio': {'normal': 1-spammerPercentage, 'spammer': spammerPercentage},
         #                        'spammerMessagingProbability': spammerBudget,
                             'rankingMethods':[RankingModel.latestMessages, RankingModel.latestMessagesSpamFiltered, RankingModel.popularMessages, RankingModel.popularMessagesSpamFiltered],
                             'spamDetectionRatio': spamDetectionRatio,
