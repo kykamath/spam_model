@@ -489,11 +489,12 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
     marker = dict([(0.0, 's'), (0.4, 'o'), (0.9, 'd')])
 #    spammerPercentages = [0.2, 0.01, 0.01]
 #    spammerPercentages = [0.015, 0.015, 0.015]
-    for iteration in range(2):
+    for iteration in range(5):
         l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
         l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
         l3 = [0.01]+l2
-        for spammerPercentage in l3:
+        spammer_percentages = l1+l2
+        for spammerPercentage in spammer_percentages:
             for spamDetectionRatio, spammerPercentage in zip(ratios, [spammerPercentage]*3):
                 experimentFileName = spamModelFolder+'performanceWithSpamDetectionVaryingPercentageOfSpammers/%s/%0.3f/%0.3f'%(iteration,spammerPercentage, spamDetectionRatio)
                 print experimentFileName
@@ -515,14 +516,17 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
                     for data in FileIO.iterateJsonFromFile(experimentFileName):
                         for ranking_id in data['spammmess']:
                             tempData[ranking_id]+=data['spammmess'][ranking_id]
-                    experimentData[iteration][spammerPercentage]=tempData
+                    if spammerPercentage not in experimentData[spamDetectionRatio]: experimentData[spamDetectionRatio][spammerPercentage]=defaultdict(list)
+                    for ranking_id in tempData:
+                        experimentData[spamDetectionRatio][spammerPercentage][ranking_id]+=tempData[ranking_id]
     if not generateData:
         sdr = {}
         for spamDetectionRatio in sorted(experimentData.keys()):
             dataToPlot = defaultdict(list)
-            for timeUnit in experimentData[spamDetectionRatio]:
-                dataToPlot['x'].append(timeUnit)
-                for ranking_id in experimentData[spamDetectionRatio][timeUnit]: dataToPlot[ranking_id].append(np.mean(experimentData[spamDetectionRatio][timeUnit][ranking_id]))
+#            for spammerPercentage in sorted(experimentData[spamDetectionRatio]):
+            for spammerPercentage in spammer_percentages:
+                dataToPlot['x'].append(spammerPercentage)
+                for ranking_id in experimentData[spamDetectionRatio][spammerPercentage]: dataToPlot[ranking_id].append(np.mean(experimentData[spamDetectionRatio][spammerPercentage][ranking_id]))
             sdr[spamDetectionRatio]=dataToPlot
 #        for ranking_id in [RankingModel.LATEST_MESSAGES_SPAM_FILTERED, RankingModel.POPULAR_MESSAGES_SPAM_FILTERED]:
         for ranking_id in [RankingModel.LATEST_MESSAGES, RankingModel.POPULAR_MESSAGES]:
@@ -530,17 +534,20 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
                 print ranking_id, spamDetectionRatio
                 dataY = smooth(sdr[spamDetectionRatio][ranking_id],8)[:len(sdr[spamDetectionRatio]['x'])]
                 dataX, dataY = sdr[spamDetectionRatio]['x'][10:], dataY[10:]
-                if spamDetectionRatio==0.0: plt.plot([x-10 for x in dataX], dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
-                else: plt.plot([x-10 for x in dataX], dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
-            plt.ylim(ymin=0, ymax=1)
-            plt.xlim(xmin=0, xmax=75)
+#                if spamDetectionRatio==0.0: plt.plot([x-10 for x in dataX], dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
+#                else: plt.plot([x-10 for x in dataX], dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
+                if spamDetectionRatio==0.0: plt.plot(dataX, dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
+                else: plt.plot(dataX, dataY, label='%s (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
+#            plt.ylim(ymin=0, ymax=1)
+#            plt.xlim(xmin=0, xmax=75)
 #            plt.title(ranking_id)
             plt.legend()
             plt.xlabel('Time', fontsize=16, fontweight='bold')
             plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #            plt.show()
 #            plt.savefig('performanceWithSpamDetection_%s.png'%ranking_id)
-            savefig('performanceWithSpamDetection_%s.png'%ranking_id)
+#            savefig('performanceWithSpamDetection_%s.png'%ranking_id)
+            plt.show()
             plt.clf()
 
         
@@ -612,7 +619,7 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
 #performanceWithSpamFilteringForLatestMessages(generateData=False)
 #performanceWithSpamFilteringForPopularMessages(generateData=False)
 #performanceWithSpamDetection(generateData=False)
-performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData=False)
+performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData=True)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
