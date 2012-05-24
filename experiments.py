@@ -506,16 +506,16 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
                             'experimentFileName': experimentFileName}
                     GeneralMethods.runCommand('rm -rf %s'%experimentFileName);run(**conf)
                 else:
-                    for data in FileIO.iterateJsonFromFile(experimentFileName):
-                        for ranking_id in data['spammmess']:
-                            if data['currentTimeStep'] not in experimentData[spamDetectionRatio]: experimentData[spamDetectionRatio][data['currentTimeStep']]=defaultdict(list)
-                            experimentData[spamDetectionRatio][data['currentTimeStep']][ranking_id]+=data['spammmess'][ranking_id]
-                            
-#                    tempData = defaultdict(list)
 #                    for data in FileIO.iterateJsonFromFile(experimentFileName):
 #                        for ranking_id in data['spammmess']:
-#                            tempData[ranking_id]+=data['spammmess'][ranking_id]
-#                    experimentData[iteration][spammerPercentage]=tempData
+#                            if data['currentTimeStep'] not in experimentData[spamDetectionRatio]: experimentData[spamDetectionRatio][data['currentTimeStep']]=defaultdict(list)
+#                            experimentData[spamDetectionRatio][data['currentTimeStep']][ranking_id]+=data['spammmess'][ranking_id]
+                            
+                    tempData = defaultdict(list)
+                    for data in FileIO.iterateJsonFromFile(experimentFileName):
+                        for ranking_id in data['spammmess']:
+                            tempData[ranking_id]+=data['spammmess'][ranking_id]
+                    experimentData[iteration][spammerPercentage]=tempData
     if not generateData:
         sdr = {}
         for spamDetectionRatio in sorted(experimentData.keys()):
@@ -612,7 +612,7 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
 #performanceWithSpamFilteringForLatestMessages(generateData=False)
 #performanceWithSpamFilteringForPopularMessages(generateData=False)
 #performanceWithSpamDetection(generateData=False)
-performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData=True)
+performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
