@@ -504,7 +504,7 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
         l1 = [spammerPercentage* 0.001 for spammerPercentage in range(1,51)]
         l2 = [spammerPercentage* 0.05 for spammerPercentage in range(1,21)]
         l3 = [0.01]+l2
-        spammer_percentages = l1
+        spammer_percentages = l3
         for spammerPercentage in spammer_percentages:
             for spamDetectionRatio, spammerPercentage in zip(ratios, [spammerPercentage]*3):
                 experimentFileName = spamModelFolder+'performanceWithSpamDetectionVaryingPercentageOfSpammers/%s/%0.3f/%0.3f'%(iteration,spammerPercentage, spamDetectionRatio)
@@ -553,8 +553,8 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
                 if spamDetectionRatio==0.0: plt.plot(dataX, dataY, label='%s'%(labels[ranking_id]), lw=1, marker=marker[spamDetectionRatio])
                 else: plt.plot(dataX, dataY, label='%s after spam detection (%d'%(labels[ranking_id].replace('Filtering', 'Detection'),spamDetectionRatio*100)+'%)', lw=1, marker=marker[spamDetectionRatio])
 #            plt.show()
-            plt.xlim(xmax=0.05)
-            plt.ylim(ymax=0.8)
+#            plt.xlim(xmax=0.05)
+#            plt.ylim(ymax=0.8)
             plt.legend(loc=2)
             plt.xlabel('Time', fontsize=16, fontweight='bold')
             plt.ylabel('Spamness', fontsize=16, fontweight='bold')
