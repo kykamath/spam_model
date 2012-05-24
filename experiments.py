@@ -14,7 +14,7 @@ from library.file_io import FileIO
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
-from library.plotting import smooth
+from library.plotting import smooth, savefig
 from operator import itemgetter
 
 import matplotlib
@@ -478,7 +478,8 @@ def performanceWithSpamDetection(generateData):
             plt.xlabel('Time', fontsize=16, fontweight='bold')
             plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #            plt.show()
-            plt.savefig('performanceWithSpamDetection_%s.png'%ranking_id)
+#            plt.savefig('performanceWithSpamDetection_%s.png'%ranking_id)
+            savefig('performanceWithSpamDetection_%s.png'%ranking_id)
             plt.clf()
         
 #def performanceWithSpamFilteringForPopularMessagesByTime(generateData):
