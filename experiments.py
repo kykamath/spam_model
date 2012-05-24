@@ -546,9 +546,9 @@ def performanceWithSpamDetection(generateData):
 #performanceAsSpammerPayloadVaries(generateData=False)
 #performanceAsNoOfGlobalPayloadsVary(generateData=False)
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
-performanceWithSpamFilteringForLatestMessages(generateData=False)
+#performanceWithSpamFilteringForLatestMessages(generateData=False)
 #performanceWithSpamFilteringForPopularMessages(generateData=False)
-#performanceWithSpamDetection(generateData=False)
+performanceWithSpamDetection(generateData=False)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
