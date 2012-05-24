@@ -545,8 +545,8 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
             plt.xlabel('Time', fontsize=16, fontweight='bold')
             plt.ylabel('Spamness', fontsize=16, fontweight='bold')
 #            plt.show()
-#            plt.savefig('performanceWithSpamDetection_%s.png'%ranking_id)
-#            savefig('performanceWithSpamDetection_%s.png'%ranking_id)
+#            plt.savefig('performanceWithSpamDetectionVaryingPercentageOfSpammers_%s.png'%ranking_id)
+#            savefig('performanceWithSpamDetectionVaryingPercentageOfSpammers_%s.png'%ranking_id)
             plt.show()
             plt.clf()
 
@@ -618,8 +618,8 @@ def performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData):
 #performanceAsPercentageOfGlobalSpammerVaries(generateData=False)
 #performanceWithSpamFilteringForLatestMessages(generateData=False)
 #performanceWithSpamFilteringForPopularMessages(generateData=False)
-#performanceWithSpamDetection(generateData=False)
-performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData=True)
+performanceWithSpamDetection(generateData=False)
+#performanceWithSpamDetectionVaryingPercentageOfSpammers(generateData=True)
 
 #model = MixedUsersModel()
 #spammerPercentage = 0.50
